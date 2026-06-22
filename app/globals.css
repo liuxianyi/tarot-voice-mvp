@@ -710,12 +710,39 @@ code {
 }
 
 .conversation-list {
-  flex: 1;
+  flex: none;
   display: grid;
   align-content: start;
   gap: 12px;
-  overflow: auto;
-  padding-right: 2px;
+  height: clamp(320px, 48vh, 620px);
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 8px;
+  scroll-behavior: smooth;
+}
+
+.conversation-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.conversation-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.conversation-list::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: var(--border-strong);
+  background-clip: padding-box;
+}
+
+.conversation-list::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+  background-clip: padding-box;
 }
 
 .message {
@@ -963,5 +990,10 @@ code {
   .status-strip > div,
   .pill {
     min-height: 48px;
+  }
+
+  .conversation-list {
+    height: 62dvh;
+    min-height: 360px;
   }
 }
