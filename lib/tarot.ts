@@ -1,4 +1,4 @@
-import type { DrawnCard, DrawnSpread, SpreadType, ToneStyle } from "@/lib/types";
+import type { DrawnCard, DrawnSpread, LanguageStyle, SpreadType, ToneStyle } from "@/lib/types";
 
 type CardTemplate = {
   id: string;
@@ -457,18 +457,33 @@ export function drawTarotSpread(question: string, spreadType: SpreadType, focusA
   };
 }
 
-function renderCardLine(card: DrawnCard): string {
+function renderCardLine(card: DrawnCard, language: LanguageStyle): string {
   const keywordText = card.keywords.join(", ");
+  if (language === "zh") {
+    return `${card.position}: ${card.name} (${card.orientation})\n- 信号：${card.meaning}\n- 关键词：${keywordText}\n- 建议：${card.advice}`;
+  }
+
   return `${card.position}: ${card.name} (${card.orientation})\n- Signal: ${card.meaning}\n- Keywords: ${keywordText}\n- Advice: ${card.advice}`;
 }
 
-export function renderLocalReading(spread: DrawnSpread, tone: ToneStyle): string {
+export function renderLocalReading(spread: DrawnSpread, tone: ToneStyle, language: LanguageStyle = "zh"): string {
+  if (language === "zh") {
+    const opening = tone === "direct" ? "这是直接版解读。" : "我会温柔但清晰地陪你看这组三张牌。";
+    const cardLines = spread.cards.map((card) => renderCardLine(card, language)).join("\n\n");
+    const closing =
+      tone === "direct"
+        ? "实际下一步：在接下来的 24 小时里，选一个和最强那张牌一致的行动，不要继续等更多征兆。"
+        : "实际下一步：在接下来的 24 小时里，选一个踏实的小行动，回应这组牌给你的提醒，而不是等待绝对确定。";
+
+    return `${opening}\n\n问题：${spread.focusQuestion}\n\n${cardLines}\n\n${closing}\n塔罗是一个自我觉察工具，不是对未来结果的保证。`;
+  }
+
   const opening =
     tone === "direct"
       ? "Here is the straight read."
       : "Here is the reading, held gently but clearly.";
 
-  const cardLines = spread.cards.map(renderCardLine).join("\n\n");
+  const cardLines = spread.cards.map((card) => renderCardLine(card, language)).join("\n\n");
   const closing =
     tone === "direct"
       ? "Practical next step: choose one action in the next 24 hours that matches the strongest card instead of waiting for more signs."
@@ -537,14 +552,18 @@ export function needsMockClarification(userMessage: string): boolean {
   return vaguePatterns.some((pattern) => pattern.test(normalized));
 }
 
-export function createMockTarotTurn(userMessage: string, spreadType: SpreadType, tone: ToneStyle) {
+export function createMockTarotTurn(userMessage: string, spreadType: SpreadType, tone: ToneStyle, language: LanguageStyle = "zh") {
   if (needsMockClarification(userMessage)) {
     return {
       cards: null,
       reply:
-        tone === "direct"
-          ? "Be specific in one line: what area is this about, and what decision or tension do you want the cards to read?"
-          : "Give me one clear line about the area and the tension you want the cards to focus on, such as love, work, money, or a specific decision.",
+        language === "zh"
+          ? tone === "direct"
+            ? "请用一句话说具体一点：这是关于哪个领域？你想让牌看的是哪个决定或拉扯？"
+            : "给我一句更清楚的描述：这是关于感情、工作、金钱，还是某个具体决定？我会据此决定是否现在抽牌。"
+          : tone === "direct"
+            ? "Be specific in one line: what area is this about, and what decision or tension do you want the cards to read?"
+            : "Give me one clear line about the area and the tension you want the cards to focus on, such as love, work, money, or a specific decision.",
       mode: "mock" as const
     };
   }
@@ -552,7 +571,7 @@ export function createMockTarotTurn(userMessage: string, spreadType: SpreadType,
   const spread = drawTarotSpread(userMessage, spreadType, "mock-mode");
   return {
     cards: spread,
-    reply: renderLocalReading(spread, tone),
+    reply: renderLocalReading(spread, tone, language),
     mode: "mock" as const
   };
 }

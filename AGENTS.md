@@ -10,7 +10,8 @@ The intended product direction is: the user says or types their current situatio
 - Main UI: `components/tarot-voice-app.tsx`.
 - Tarot turn API: `app/api/tarot/turn/route.ts`.
 - Optional text-to-speech API: `app/api/tarot/speak/route.ts`.
-- OpenAI Responses integration: `lib/openai.ts`.
+- Optional local VoxCPM TTS server: `scripts/voxcpm_tts_server.py`.
+- OpenAI Responses and DeepSeek Chat Completions integration: `lib/openai.ts`.
 - Local tarot deck, mock readings, and spread drawing: `lib/tarot.ts`.
 - Shared types: `lib/types.ts`.
 - Global styling: `app/globals.css`.
@@ -22,8 +23,8 @@ The app already supports:
 - assistant replies stored in local storage;
 - a server-side `draw_tarot_spread` tool call;
 - `single-card` and `three-card` spreads;
-- mock mode when `OPENAI_API_KEY` is missing;
-- optional OpenAI TTS through `/api/tarot/speak`.
+- mock mode when the selected text provider API key is missing;
+- optional server-side TTS through `/api/tarot/speak`, backed by OpenAI or VoxCPM.
 
 The app does not yet generate or display real tarot images. It currently renders drawn cards as text tiles in the "Latest spread" panel.
 
@@ -90,11 +91,23 @@ If using OpenAI image generation, keep provider-specific code isolated from `com
 Expected environment variables:
 
 ```bash
+AI_PROVIDER=openai
 OPENAI_API_KEY=...
 OPENAI_MODEL=gpt-5.5
+TTS_PROVIDER=openai
 OPENAI_TTS_MODEL=gpt-4o-mini-tts
 OPENAI_TTS_VOICE=marin
+VOXCPM_TTS_ENDPOINT=http://127.0.0.1:8810/synthesize
+VOXCPM_TTS_CONTROL=年轻女性，声音温柔平静，有疗愈感，语速适中，适合塔罗解读
+VOXCPM_TTS_CFG=2.0
+VOXCPM_TTS_STEPS=10
+DEEPSEEK_API_KEY=
+DEEPSEEK_MODEL=deepseek-chat
 ```
+
+Set `AI_PROVIDER=deepseek` to use DeepSeek for tarot text reasoning. DeepSeek support lives in `lib/openai.ts` beside the OpenAI Responses implementation. OpenAI TTS still requires `OPENAI_API_KEY`.
+
+Set `TTS_PROVIDER=voxcpm` to use local VoxCPM speech synthesis. VoxCPM is a Python model runtime, so run `python scripts/voxcpm_tts_server.py --host 127.0.0.1 --port 8810 --device auto` in a Python environment with `voxcpm` installed. The Next.js route calls `VOXCPM_TTS_ENDPOINT` and returns `audio/wav`.
 
 Future image generation work will likely need an explicit image model variable, for example:
 
@@ -124,8 +137,9 @@ http://127.0.0.1:3017
 - `README.md`: user-facing project overview and API contract.
 - `components/tarot-voice-app.tsx`: main client component, voice capture, chat state, spread rendering.
 - `app/api/tarot/turn/route.ts`: validates turn requests, chooses mock or live mode.
-- `app/api/tarot/speak/route.ts`: calls OpenAI TTS and returns MP3 audio.
-- `lib/openai.ts`: Responses API call, tool definition, tool output loop.
+- `app/api/tarot/speak/route.ts`: dispatches to OpenAI TTS or local VoxCPM TTS and returns audio.
+- `scripts/voxcpm_tts_server.py`: lightweight local HTTP server wrapping `voxcpm.VoxCPM.generate()`.
+- `lib/openai.ts`: OpenAI Responses call, DeepSeek Chat Completions call, tool definition, tool output loops.
 - `lib/tarot.ts`: deck templates, shuffle/draw logic, mock clarification behavior.
 - `lib/types.ts`: shared request/response/card types.
 - `app/globals.css`: global layout and component styling.

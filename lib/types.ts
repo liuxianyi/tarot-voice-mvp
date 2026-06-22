@@ -2,6 +2,7 @@ export type SpreadType = "single-card" | "three-card";
 export type ToneStyle = "soft" | "direct";
 export type MessageSource = "text" | "voice";
 export type ModeKind = "live" | "mock";
+export type LanguageStyle = "zh" | "en";
 
 export interface DrawnCard {
   id: string;
@@ -37,6 +38,7 @@ export interface TarotTurnRequest {
   userMessage: string;
   spreadType: SpreadType;
   tone: ToneStyle;
+  language?: LanguageStyle;
   channel?: "web-text" | "web-voice" | "phone";
 }
 

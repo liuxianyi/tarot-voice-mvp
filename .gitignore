@@ -1,4 +1,8 @@
 .env.local
+.venv/
+pretrained_models/
+__pycache__/
+*.py[cod]
 .next/
 node_modules/
 tsconfig.tsbuildinfo

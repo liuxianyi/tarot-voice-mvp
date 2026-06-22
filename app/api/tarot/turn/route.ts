@@ -1,4 +1,4 @@
-import { runTarotTurn } from "@/lib/openai";
+import { hasLiveTarotProvider, runTarotTurn } from "@/lib/openai";
 import { createMockTarotTurn } from "@/lib/tarot";
 import type { TarotTurnRequest } from "@/lib/types";
 
@@ -14,6 +14,7 @@ export async function POST(request: Request) {
   const userMessage = body.userMessage?.trim();
   const spreadType = body.spreadType === "single-card" ? "single-card" : "three-card";
   const tone = body.tone === "direct" ? "direct" : "soft";
+  const language = body.language === "en" ? "en" : "zh";
   const history = Array.isArray(body.history) ? body.history : [];
   const channel = body.channel || "web-text";
 
@@ -21,8 +22,8 @@ export async function POST(request: Request) {
     return Response.json({ error: "userMessage is required." }, { status: 400 });
   }
 
-  if (!process.env.OPENAI_API_KEY) {
-    return Response.json(createMockTarotTurn(userMessage, spreadType, tone));
+  if (!hasLiveTarotProvider()) {
+    return Response.json(createMockTarotTurn(userMessage, spreadType, tone, language));
   }
 
   try {
@@ -31,6 +32,7 @@ export async function POST(request: Request) {
       userMessage,
       spreadType,
       tone,
+      language,
       channel
     });
 

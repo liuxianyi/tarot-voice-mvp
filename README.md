@@ -5,7 +5,7 @@ A phone-ready tarot companion MVP built for the fastest possible first launch.
 This project intentionally uses a chained voice workflow:
 
 1. browser speech capture
-2. text reasoning with the OpenAI Responses API
+2. text reasoning with OpenAI Responses API or DeepSeek Chat Completions
 3. a server-side tarot drawing tool
 4. optional OpenAI TTS playback
 
@@ -18,31 +18,68 @@ That choice is deliberate. OpenAI's voice-agent guidance says chained voice pipe
 - `/api/tarot/turn` for the tarot brain
 - Server-side tarot drawing via a function tool
 - Optional `/api/tarot/speak` for OpenAI TTS
-- Mock mode when `OPENAI_API_KEY` is missing
+- Mock mode when the selected text provider API key is missing
 
 ## Stack
 
 - `Next.js 16`
 - `React 19`
-- `OpenAI Responses API`
-- `OpenAI Audio Speech API`
+- `OpenAI Responses API` or `DeepSeek Chat Completions`
+- `OpenAI Audio Speech API` or local `VoxCPM` TTS
 
 ## Environment
 
 Copy `.env.example` to `.env.local` and fill in:
 
 ```bash
+AI_PROVIDER=openai
 OPENAI_API_KEY=...
 OPENAI_MODEL=gpt-5.5
+TTS_PROVIDER=openai
 OPENAI_TTS_MODEL=gpt-4o-mini-tts
 OPENAI_TTS_VOICE=marin
+VOXCPM_TTS_ENDPOINT=http://127.0.0.1:8810/synthesize
+VOXCPM_TTS_CONTROL=年轻女性，声音温柔平静，有疗愈感，语速适中，适合塔罗解读
+VOXCPM_TTS_CFG=2.0
+VOXCPM_TTS_STEPS=10
+DEEPSEEK_API_KEY=
+DEEPSEEK_MODEL=deepseek-chat
 ```
 
 Notes:
 
+- Set `AI_PROVIDER=deepseek` to use DeepSeek for `/api/tarot/turn`.
+- DeepSeek uses `DEEPSEEK_API_KEY` and `DEEPSEEK_MODEL`.
+- Set `TTS_PROVIDER=voxcpm` to use a local VoxCPM TTS service for `/api/tarot/speak`.
+- OpenAI TTS uses `OPENAI_API_KEY`, even when the tarot turn uses DeepSeek.
 - The current OpenAI latest-model guide lists `gpt-5.5` as the latest general model.
 - The current text-to-speech guide recommends `gpt-4o-mini-tts` for intelligent realtime applications.
 - The same guide says the best-quality built-in voices are `marin` and `cedar`.
+
+## VoxCPM TTS
+
+VoxCPM is a Python model runtime, so this repo calls it through a small local HTTP service.
+
+Install VoxCPM in a Python environment that satisfies the VoxCPM requirements:
+
+```bash
+pip install voxcpm
+```
+
+Start the local TTS service:
+
+```bash
+python scripts/voxcpm_tts_server.py --host 127.0.0.1 --port 8810 --device auto
+```
+
+Then set:
+
+```bash
+TTS_PROVIDER=voxcpm
+VOXCPM_TTS_ENDPOINT=http://127.0.0.1:8810/synthesize
+```
+
+Keep the app's speech output set to Server TTS in the UI. That button means server-side AI voice; the server decides whether that is OpenAI or VoxCPM through `TTS_PROVIDER`.
 
 ## Run locally
 
