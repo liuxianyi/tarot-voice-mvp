@@ -109,6 +109,9 @@ const uiText = {
     mock: "模拟",
     voiceUnavailable: "这个浏览器暂时无法语音识别，你可以直接输入文字。",
     voiceStopped: "语音输入已停止",
+    voiceNetworkError: "浏览器的在线语音识别服务连接失败。请检查网络或换用 Chrome，也可以直接输入文字。",
+    voicePermissionError: "麦克风权限未开启。请在浏览器地址栏的网站权限中允许使用麦克风。",
+    voiceNoSpeech: "没有听清楚，请靠近麦克风后再试一次。",
     voiceStartFailed: "语音输入无法启动。如果浏览器已经占用麦克风，请停止后再试。",
     ttsFallback: "OpenAI 语音暂时不可用，已切换为浏览器朗读。",
     ttsUnavailable: "OpenAI 语音暂时不可用。",
@@ -172,6 +175,9 @@ const uiText = {
     mock: "Mock",
     voiceUnavailable: "Speech recognition is not available in this browser. You can still type.",
     voiceStopped: "Voice capture stopped",
+    voiceNetworkError: "The browser could not reach its online speech recognition service. Check your connection, try Chrome, or type instead.",
+    voicePermissionError: "Microphone access is blocked. Allow microphone access in this site's browser permissions.",
+    voiceNoSpeech: "No speech was detected. Move closer to the microphone and try again.",
     voiceStartFailed: "Voice capture could not start. If your browser already has the mic open, stop it and try again.",
     ttsFallback: "OpenAI TTS was unavailable, so the browser voice will take over.",
     ttsUnavailable: "OpenAI TTS unavailable.",
@@ -570,6 +576,26 @@ export function TarotVoiceApp() {
 
     recognition.onerror = (event) => {
       setIsListening(false);
+
+      if (event.error === "network") {
+        setError(t.voiceNetworkError as string);
+        return;
+      }
+
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        setError(t.voicePermissionError as string);
+        return;
+      }
+
+      if (event.error === "no-speech") {
+        setError(t.voiceNoSpeech as string);
+        return;
+      }
+
+      if (event.error === "aborted") {
+        return;
+      }
+
       setError(`${t.voiceStopped}: ${event.error}`);
     };
 
@@ -596,7 +622,13 @@ export function TarotVoiceApp() {
       recognition.stop();
       recognitionRef.current = null;
     };
-  }, [language, t.voiceStopped]);
+  }, [
+    language,
+    t.voiceNetworkError,
+    t.voiceNoSpeech,
+    t.voicePermissionError,
+    t.voiceStopped
+  ]);
 
   const latestSpread = useMemo(() => {
     return [...messages].reverse().find((message) => message.cards)?.cards || null;
