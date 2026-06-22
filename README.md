@@ -4,7 +4,7 @@ A phone-ready tarot companion MVP built for the fastest possible first launch.
 
 This project intentionally uses a chained voice workflow:
 
-1. browser speech capture
+1. browser audio capture with local MLX Whisper transcription
 2. text reasoning with OpenAI Responses API or DeepSeek Chat Completions
 3. a server-side tarot drawing tool
 4. optional OpenAI TTS playback
@@ -14,7 +14,7 @@ That choice is deliberate. OpenAI's voice-agent guidance says chained voice pipe
 ## What ships in this repo
 
 - A polished single-page web UI
-- Browser voice input through `SpeechRecognition`
+- Browser audio recording through `MediaRecorder`, transcribed locally with MLX Whisper
 - `/api/tarot/turn` for the tarot brain
 - Server-side tarot drawing via a function tool
 - Optional `/api/tarot/speak` for OpenAI TTS
@@ -80,6 +80,17 @@ VOXCPM_TTS_ENDPOINT=http://127.0.0.1:8810/synthesize
 ```
 
 Keep the app's speech output set to Server TTS in the UI. That button means server-side AI voice; the server decides whether that is OpenAI or VoxCPM through `TTS_PROVIDER`.
+
+## Local speech input
+
+Install MLX Whisper into the project environment and start Next.js normally:
+
+```bash
+uv pip install --python .venv/bin/python mlx-whisper
+npm run dev
+```
+
+The first recording downloads `mlx-community/whisper-small-mlx`; later recordings use the local model cache. Set `STT_MODEL` to choose another MLX Whisper model or `STT_PYTHON` to override the project Python executable.
 
 ## Run locally
 

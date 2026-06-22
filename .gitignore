@@ -1,6 +1,7 @@
 .env.local
 .venv/
 pretrained_models/
+.cache/
 __pycache__/
 *.py[cod]
 .next/

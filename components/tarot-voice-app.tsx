@@ -14,43 +14,6 @@ import type {
   ToneStyle
 } from "@/lib/types";
 
-type BrowserSpeechRecognitionResult = {
-  isFinal: boolean;
-  0: {
-    transcript: string;
-  };
-  length: number;
-};
-
-type BrowserSpeechRecognitionEvent = Event & {
-  results: ArrayLike<BrowserSpeechRecognitionResult>;
-};
-
-type BrowserSpeechRecognitionErrorEvent = Event & {
-  error: string;
-};
-
-type BrowserSpeechRecognition = {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  onstart: (() => void) | null;
-  onend: (() => void) | null;
-  onerror: ((event: BrowserSpeechRecognitionErrorEvent) => void) | null;
-  onresult: ((event: BrowserSpeechRecognitionEvent) => void) | null;
-  start: () => void;
-  stop: () => void;
-};
-
-type BrowserSpeechRecognitionConstructor = new () => BrowserSpeechRecognition;
-
-declare global {
-  interface Window {
-    SpeechRecognition?: BrowserSpeechRecognitionConstructor;
-    webkitSpeechRecognition?: BrowserSpeechRecognitionConstructor;
-  }
-}
-
 const STORAGE_KEY = "tarot-voice-mvp-history";
 const LANGUAGE_STORAGE_KEY = "tarot-voice-mvp-language";
 const MAX_HISTORY = 18;
@@ -85,6 +48,7 @@ const uiText = {
     questionPlaceholder: "说说你现在的情况，感情、工作、金钱或某个决定都可以。",
     speak: "说话",
     listening: "聆听中",
+    transcribing: "转写中",
     send: "发送",
     reading: "解读中",
     supportNote: "当前浏览器不支持语音输入，你仍然可以用文字聊天。",
@@ -109,7 +73,7 @@ const uiText = {
     mock: "模拟",
     voiceUnavailable: "这个浏览器暂时无法语音识别，你可以直接输入文字。",
     voiceStopped: "语音输入已停止",
-    voiceNetworkError: "浏览器的在线语音识别服务连接失败。请检查网络或换用 Chrome，也可以直接输入文字。",
+    voiceNetworkError: "本地语音转写失败，请确认 Whisper 已安装并稍后重试。",
     voicePermissionError: "麦克风权限未开启。请在浏览器地址栏的网站权限中允许使用麦克风。",
     voiceNoSpeech: "没有听清楚，请靠近麦克风后再试一次。",
     voiceStartFailed: "语音输入无法启动。如果浏览器已经占用麦克风，请停止后再试。",
@@ -151,6 +115,7 @@ const uiText = {
     questionPlaceholder: "Ask about love, work, money, or a decision.",
     speak: "Speak",
     listening: "Listening",
+    transcribing: "Transcribing",
     send: "Send",
     reading: "Reading",
     supportNote: "This browser does not support voice input yet. Text chat is still fully available.",
@@ -175,7 +140,7 @@ const uiText = {
     mock: "Mock",
     voiceUnavailable: "Speech recognition is not available in this browser. You can still type.",
     voiceStopped: "Voice capture stopped",
-    voiceNetworkError: "The browser could not reach its online speech recognition service. Check your connection, try Chrome, or type instead.",
+    voiceNetworkError: "Local speech transcription failed. Check the Whisper installation and try again.",
     voicePermissionError: "Microphone access is blocked. Allow microphone access in this site's browser permissions.",
     voiceNoSpeech: "No speech was detected. Move closer to the microphone and try again.",
     voiceStartFailed: "Voice capture could not start. If your browser already has the mic open, stop it and try again.",
@@ -465,6 +430,7 @@ export function TarotVoiceApp() {
   const [ttsMode, setTtsMode] = useState<"browser" | "openai">("browser");
   const [autoSpeak, setAutoSpeak] = useState(true);
   const [isListening, setIsListening] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
   const [mode, setMode] = useState<"live" | "mock">("mock");
   const [error, setError] = useState<string | null>(null);
@@ -472,9 +438,10 @@ export function TarotVoiceApp() {
   const [hydrated, setHydrated] = useState(false);
 
   const messagesRef = useRef<TarotChatMessage[]>(messages);
-  const recognitionRef = useRef<BrowserSpeechRecognition | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const recordingStreamRef = useRef<MediaStream | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const transcriptRef = useRef("");
   const listRef = useRef<HTMLDivElement | null>(null);
   const t = uiText[language];
   const quickPrompts = t.quickPrompts as string[];
@@ -550,85 +517,13 @@ export function TarotVoiceApp() {
       return;
     }
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      setSpeechSupported(false);
-      return;
-    }
-
-    setSpeechSupported(true);
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = language === "zh" ? "zh-CN" : "en-US";
-    recognition.continuous = false;
-    recognition.interimResults = true;
-
-    recognition.onstart = () => {
-      transcriptRef.current = "";
-      setIsListening(true);
-      setError(null);
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognition.onerror = (event) => {
-      setIsListening(false);
-
-      if (event.error === "network") {
-        setError(t.voiceNetworkError as string);
-        return;
-      }
-
-      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-        setError(t.voicePermissionError as string);
-        return;
-      }
-
-      if (event.error === "no-speech") {
-        setError(t.voiceNoSpeech as string);
-        return;
-      }
-
-      if (event.error === "aborted") {
-        return;
-      }
-
-      setError(`${t.voiceStopped}: ${event.error}`);
-    };
-
-    recognition.onresult = async (event) => {
-      const transcript = Array.from(event.results)
-        .map((result) => result[0]?.transcript || "")
-        .join("")
-        .trim();
-
-      transcriptRef.current = transcript;
-      setDraft(transcript);
-
-      const lastResult = event.results[event.results.length - 1];
-
-      if (lastResult?.isFinal && transcript) {
-        await submitTurn(transcript, "voice");
-        setDraft("");
-      }
-    };
-
-    recognitionRef.current = recognition;
+    setSpeechSupported(Boolean(navigator.mediaDevices && typeof window.MediaRecorder !== "undefined"));
 
     return () => {
-      recognition.stop();
-      recognitionRef.current = null;
+      recorderRef.current?.stop();
+      recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
     };
-  }, [
-    language,
-    t.voiceNetworkError,
-    t.voiceNoSpeech,
-    t.voicePermissionError,
-    t.voiceStopped
-  ]);
+  }, []);
 
   const latestSpread = useMemo(() => {
     return [...messages].reverse().find((message) => message.cards)?.cards || null;
@@ -738,7 +633,8 @@ export function TarotVoiceApp() {
   }
 
   function handleReset() {
-    recognitionRef.current?.stop();
+    recorderRef.current?.stop();
+    recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
     audioRef.current?.pause();
     if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
@@ -749,16 +645,56 @@ export function TarotVoiceApp() {
     window.localStorage.removeItem(STORAGE_KEY);
   }
 
-  function startListening() {
-    if (!recognitionRef.current) {
+  async function startListening() {
+    if (isListening) {
+      recorderRef.current?.stop();
+      return;
+    }
+
+    if (!speechSupported) {
       setError(t.voiceUnavailable as string);
       return;
     }
 
     try {
-      recognitionRef.current.start();
-    } catch {
-      setError(t.voiceStartFailed as string);
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      recordingStreamRef.current = stream;
+      recorderRef.current = recorder;
+      audioChunksRef.current = [];
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size) audioChunksRef.current.push(event.data);
+      };
+      recorder.onstop = async () => {
+        setIsListening(false);
+        stream.getTracks().forEach((track) => track.stop());
+        setIsTranscribing(true);
+
+        try {
+          const audio = new Blob(audioChunksRef.current, { type: recorder.mimeType || "audio/webm" });
+          const formData = new FormData();
+          formData.append("audio", audio, "recording.webm");
+          formData.append("language", language);
+          const response = await fetch("/api/tarot/transcribe", { method: "POST", body: formData });
+          const result = (await response.json()) as { text?: string; error?: string; detail?: string };
+
+          if (!response.ok || !result.text) throw new Error(result.error || result.detail || (t.voiceNetworkError as string));
+          setDraft(result.text);
+          await submitTurn(result.text, "voice");
+          setDraft("");
+        } catch (transcriptionError) {
+          setError(transcriptionError instanceof Error ? transcriptionError.message : (t.voiceNetworkError as string));
+        } finally {
+          setIsTranscribing(false);
+        }
+      };
+      recorder.start();
+      setError(null);
+      setIsListening(true);
+    } catch (captureError) {
+      const permissionDenied = captureError instanceof DOMException && captureError.name === "NotAllowedError";
+      setError(permissionDenied ? (t.voicePermissionError as string) : (t.voiceStartFailed as string));
     }
   }
 
@@ -787,7 +723,7 @@ export function TarotVoiceApp() {
           </div>
           <div>
             <span>{t.voiceIn}</span>
-            <strong>{speechSupported ? "SpeechRecognition" : t.textOnly}</strong>
+            <strong>{speechSupported ? "Local Whisper" : t.textOnly}</strong>
           </div>
           <div>
             <span>{t.voiceOut}</span>
@@ -904,13 +840,13 @@ export function TarotVoiceApp() {
             <div className="composer-actions">
               <button
                 className={isListening ? "primary-button pulse" : "primary-button"}
-                disabled={!speechSupported}
-                onClick={startListening}
+                disabled={!speechSupported || isTranscribing}
+                onClick={() => void startListening()}
                 type="button"
                 title={t.speak as string}
               >
                 <Mic aria-hidden="true" size={18} />
-                <span>{isListening ? t.listening : t.speak}</span>
+                <span>{isTranscribing ? t.transcribing : isListening ? t.listening : t.speak}</span>
               </button>
               <button
                 className="secondary-button"
