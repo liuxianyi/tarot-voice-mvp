@@ -354,7 +354,17 @@ function displayArcana(card: DrawnCard, language: LanguageStyle) {
   return card.suit ? suits[card.suit] : "小阿卡那";
 }
 
+const tarotCardArtwork: Record<string, string> = {
+  "major-fool": "/tarot-cards/major-fool.png"
+};
+
+function getTarotCardArtwork(card: DrawnCard) {
+  const baseId = card.id.replace(/-(upright|reversed)-.+$/, "");
+  return tarotCardArtwork[baseId];
+}
+
 function TarotCardImage({ card, index, language }: { card: DrawnCard; index: number; language: LanguageStyle }) {
+  const artwork = getTarotCardArtwork(card);
   const palette = cardPalette(card);
   const seed = hashText(card.id);
   const symbol = card.arcana === "major" ? "✦" : card.suit === "Cups" ? "☽" : card.suit === "Swords" ? "◇" : card.suit === "Pentacles" ? "◎" : "△";
@@ -367,26 +377,36 @@ function TarotCardImage({ card, index, language }: { card: DrawnCard; index: num
   } as CSSProperties;
 
   return (
-    <article className={`tarot-card-image ${card.orientation === "reversed" ? "is-reversed" : ""}`} style={cardStyle}>
+    <article className={`tarot-card-image ${artwork ? "has-artwork" : ""} ${card.orientation === "reversed" ? "is-reversed" : ""}`} style={cardStyle}>
       <div className="tarot-card-frame">
-        <div className="tarot-card-sky">
-          <span className="tarot-orbit one" />
-          <span className="tarot-orbit two" />
-          <span className="tarot-star a" />
-          <span className="tarot-star b" />
-          <span className="tarot-star c" />
-        </div>
-        <div className="tarot-symbol" aria-hidden="true">
-          {symbol}
-        </div>
-        <div className="tarot-card-title">
-          <span>{displayPosition(card.position, language)}</span>
-          <strong>{card.name}</strong>
-        </div>
-        <div className="tarot-card-footer">
-          <span>{displayOrientation(card.orientation, language)}</span>
-          <span>{displayArcana(card, language)}</span>
-        </div>
+        {artwork ? (
+          <img
+            alt={`${card.name} · ${displayOrientation(card.orientation, language)}`}
+            className="tarot-card-artwork"
+            src={artwork}
+          />
+        ) : (
+          <>
+            <div className="tarot-card-sky">
+              <span className="tarot-orbit one" />
+              <span className="tarot-orbit two" />
+              <span className="tarot-star a" />
+              <span className="tarot-star b" />
+              <span className="tarot-star c" />
+            </div>
+            <div className="tarot-symbol" aria-hidden="true">
+              {symbol}
+            </div>
+            <div className="tarot-card-title">
+              <span>{displayPosition(card.position, language)}</span>
+              <strong>{card.name}</strong>
+            </div>
+            <div className="tarot-card-footer">
+              <span>{displayOrientation(card.orientation, language)}</span>
+              <span>{displayArcana(card, language)}</span>
+            </div>
+          </>
+        )}
       </div>
     </article>
   );

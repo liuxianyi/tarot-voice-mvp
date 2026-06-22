@@ -530,6 +530,28 @@ code {
   pointer-events: none;
 }
 
+.tarot-card-image.has-artwork .tarot-card-frame {
+  border-color: color-mix(in srgb, var(--card-glow) 68%, var(--border));
+  background: #0d0e0d;
+}
+
+.tarot-card-image.has-artwork .tarot-card-frame::before,
+.tarot-card-image.has-artwork .tarot-card-frame::after {
+  display: none;
+}
+
+.tarot-card-artwork {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  transition: transform 420ms ease;
+}
+
+.tarot-card-image.has-artwork.is-reversed .tarot-card-artwork {
+  transform: rotate(180deg);
+}
+
 .tarot-card-sky,
 .tarot-symbol,
 .tarot-card-title,
