@@ -32,7 +32,7 @@ That choice is deliberate. OpenAI's voice-agent guidance says chained voice pipe
 Copy `.env.example` to `.env.local` and fill in:
 
 ```bash
-AI_PROVIDER=openai
+AI_PROVIDER=deepseek
 OPENAI_API_KEY=...
 OPENAI_MODEL=gpt-5.5
 TTS_PROVIDER=openai
@@ -49,6 +49,7 @@ DEEPSEEK_MODEL=deepseek-chat
 Notes:
 
 - Set `AI_PROVIDER=deepseek` to use DeepSeek for `/api/tarot/turn`.
+- If `AI_PROVIDER` is omitted, the server automatically selects DeepSeek when `DEEPSEEK_API_KEY` is present; otherwise it selects OpenAI.
 - DeepSeek uses `DEEPSEEK_API_KEY` and `DEEPSEEK_MODEL`.
 - Set `TTS_PROVIDER=voxcpm` to use a local VoxCPM TTS service for `/api/tarot/speak`.
 - OpenAI TTS uses `OPENAI_API_KEY`, even when the tarot turn uses DeepSeek.

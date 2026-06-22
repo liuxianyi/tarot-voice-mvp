@@ -121,7 +121,17 @@ const deepseekTarotTools = tarotTools.map((tool) => ({
 }));
 
 function getAiProvider(): AiProvider {
-  return process.env.AI_PROVIDER === "deepseek" ? "deepseek" : "openai";
+  if (process.env.AI_PROVIDER === "deepseek" || process.env.AI_PROVIDER === "openai") {
+    return process.env.AI_PROVIDER;
+  }
+
+  // Prefer the provider that is actually configured so deployments do not
+  // silently fall back to mock mode when AI_PROVIDER was omitted.
+  if (process.env.DEEPSEEK_API_KEY) {
+    return "deepseek";
+  }
+
+  return "openai";
 }
 
 export function hasLiveTarotProvider() {
