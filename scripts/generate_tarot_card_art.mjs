@@ -124,12 +124,12 @@ function renderCard(card) {
   <circle cx="225" cy="302" r="118" fill="none" stroke="${card.accent}" stroke-opacity="0.42" stroke-width="1.4"/>
   <circle cx="225" cy="302" r="76" fill="none" stroke="#fff7d8" stroke-opacity="0.18" stroke-width="1"/>
   ${motif(card)}
-  <text x="225" y="70" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="23" letter-spacing="2" fill="${card.accent}">${escapeXml(card.mark)}</text>
-  <text x="225" y="333" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="${symbolSize}" fill="${card.accent}" opacity="0.95">${escapeXml(card.symbol)}</text>
-  ${titleLines.map((line, index) => `<text x="225" y="${titleY + index * 34}" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="28" fill="#fff6da">${escapeXml(line)}</text>`).join("")}
-  <text x="225" y="580" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="13" letter-spacing="4" fill="${card.accent}" opacity="0.78">${escapeXml(subtitle.toUpperCase())}</text>
+  <text x="225" y="70" text-anchor="middle" font-family="serif" font-size="23" letter-spacing="2" fill="${card.accent}">${escapeXml(card.mark)}</text>
+  <text x="225" y="333" text-anchor="middle" font-family="serif" font-size="${symbolSize}" fill="${card.accent}" opacity="0.95">${escapeXml(card.symbol)}</text>
+  ${titleLines.map((line, index) => `<text x="225" y="${titleY + index * 34}" text-anchor="middle" font-family="serif" font-size="28" fill="#fff6da">${escapeXml(line)}</text>`).join("")}
+  <text x="225" y="580" text-anchor="middle" font-family="sans-serif" font-size="13" letter-spacing="4" fill="${card.accent}" opacity="0.78">${escapeXml(subtitle.toUpperCase())}</text>
   <path d="M 86 612 H 364" stroke="${card.accent}" stroke-opacity="0.42"/>
-  <text x="225" y="632" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="11" letter-spacing="3" fill="#fff6da" opacity="0.58">LUNA TAROT</text>
+  <text x="225" y="632" text-anchor="middle" font-family="sans-serif" font-size="11" letter-spacing="3" fill="#fff6da" opacity="0.58">LUNA TAROT</text>
 </svg>
 `;
 }
