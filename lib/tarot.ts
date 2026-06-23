@@ -71,6 +71,17 @@ const majorArcana: CardTemplate[] = [
     reversedAdvice: "Keep the backbone, but loosen the grip."
   },
   {
+    id: "major-hierophant",
+    name: "The Hierophant",
+    arcana: "major",
+    uprightKeywords: ["tradition", "guidance", "shared values"],
+    reversedKeywords: ["questioning rules", "inner teacher", "misfit path"],
+    uprightMeaning: "Support may come through trusted wisdom, shared values, or a structure that has lasted.",
+    reversedMeaning: "The old rulebook may not fit the truth of your situation anymore.",
+    uprightAdvice: "Seek grounded guidance, but keep your own conscience in the room.",
+    reversedAdvice: "Question inherited rules without rejecting wisdom just to feel free."
+  },
+  {
     id: "major-lovers",
     name: "The Lovers",
     arcana: "major",

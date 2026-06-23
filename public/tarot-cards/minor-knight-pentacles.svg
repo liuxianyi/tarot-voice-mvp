@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1350" viewBox="0 0 450 675" role="img" aria-label="Knight of Pentacles tarot card">
+  <defs>
+    <linearGradient id="bg-minor-knight-pentacles" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#150f25"/>
+      <stop offset="0.48" stop-color="#251a36"/>
+      <stop offset="1" stop-color="#0b1421"/>
+    </linearGradient>
+    <radialGradient id="glow-minor-knight-pentacles" cx="50%" cy="42%" r="52%">
+      <stop offset="0" stop-color="#70c98b" stop-opacity="0.82"/>
+      <stop offset="0.48" stop-color="#70c98b" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#70c98b" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="line-minor-knight-pentacles" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#d1f3d9" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#d1f3d9" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#d1f3d9" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="450" height="675" rx="34" fill="url(#bg-minor-knight-pentacles)"/>
+  <rect x="18" y="18" width="414" height="639" rx="28" fill="none" stroke="#d1f3d9" stroke-opacity="0.72" stroke-width="2"/>
+  <rect x="31" y="31" width="388" height="613" rx="22" fill="none" stroke="#fff7d8" stroke-opacity="0.16"/>
+  <circle cx="225" cy="302" r="170" fill="url(#glow-minor-knight-pentacles)"/>
+  <circle cx="225" cy="302" r="118" fill="none" stroke="#d1f3d9" stroke-opacity="0.42" stroke-width="1.4"/>
+  <circle cx="225" cy="302" r="76" fill="none" stroke="#fff7d8" stroke-opacity="0.18" stroke-width="1"/>
+  <path d="M 58 151 C 150 84, 270 218, 392 143" fill="none" stroke="url(#line-minor-knight-pentacles)" stroke-width="1.2" opacity="0.28"/><path d="M 62 205 C 150 121, 270 289, 387 197" fill="none" stroke="url(#line-minor-knight-pentacles)" stroke-width="2" opacity="0.36000000000000004"/><path d="M 66 259 C 150 212, 270 306, 382 251" fill="none" stroke="url(#line-minor-knight-pentacles)" stroke-width="1.2" opacity="0.44000000000000006"/><path d="M 70 313 C 150 249, 270 377, 377 305" fill="none" stroke="url(#line-minor-knight-pentacles)" stroke-width="2" opacity="0.52"/><path d="M 74 367 C 150 286, 270 448, 372 359" fill="none" stroke="url(#line-minor-knight-pentacles)" stroke-width="1.2" opacity="0.6000000000000001"/><circle cx="370" cy="351" r="1.32" fill="#fff7d8" opacity="0.22"/><circle cx="135" cy="412" r="1.74" fill="#fff7d8" opacity="0.3"/><circle cx="240" cy="473" r="2.16" fill="#fff7d8" opacity="0.38"/><circle cx="345" cy="534" r="0.90" fill="#fff7d8" opacity="0.45999999999999996"/><circle cx="110" cy="595" r="1.32" fill="#fff7d8" opacity="0.54"/><circle cx="215" cy="136" r="1.74" fill="#fff7d8" opacity="0.22"/><circle cx="320" cy="197" r="2.16" fill="#fff7d8" opacity="0.3"/><circle cx="85" cy="258" r="0.90" fill="#fff7d8" opacity="0.38"/><circle cx="190" cy="319" r="1.32" fill="#fff7d8" opacity="0.45999999999999996"/><circle cx="295" cy="380" r="1.74" fill="#fff7d8" opacity="0.54"/><circle cx="60" cy="441" r="2.16" fill="#fff7d8" opacity="0.22"/><circle cx="165" cy="502" r="0.90" fill="#fff7d8" opacity="0.3"/><circle cx="270" cy="563" r="1.32" fill="#fff7d8" opacity="0.38"/><circle cx="375" cy="104" r="1.74" fill="#fff7d8" opacity="0.45999999999999996"/><circle cx="140" cy="165" r="2.16" fill="#fff7d8" opacity="0.54"/><circle cx="245" cy="226" r="0.90" fill="#fff7d8" opacity="0.22"/><circle cx="350" cy="287" r="1.32" fill="#fff7d8" opacity="0.3"/><circle cx="115" cy="348" r="1.74" fill="#fff7d8" opacity="0.38"/>
+  <text x="225" y="70" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="23" letter-spacing="2" fill="#d1f3d9">◎</text>
+  <text x="225" y="333" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="102" fill="#d1f3d9" opacity="0.95">◎</text>
+  <text x="225" y="482" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="28" fill="#fff6da">Knight of</text><text x="225" y="516" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="28" fill="#fff6da">Pentacles</text>
+  <text x="225" y="580" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="13" letter-spacing="4" fill="#d1f3d9" opacity="0.78">PENTACLES</text>
+  <path d="M 86 612 H 364" stroke="#d1f3d9" stroke-opacity="0.42"/>
+  <text x="225" y="632" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="11" letter-spacing="3" fill="#fff6da" opacity="0.58">LUNA TAROT</text>
+</svg>

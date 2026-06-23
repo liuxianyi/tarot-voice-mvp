@@ -1,6 +1,6 @@
 "use client";
 
-import { Mic, RotateCcw, Send, Volume2 } from "lucide-react";
+import { Mic, RotateCcw, Send, Settings, Volume2, X } from "lucide-react";
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import type {
@@ -360,7 +360,7 @@ const tarotCardArtwork: Record<string, string> = {
 
 function getTarotCardArtwork(card: DrawnCard) {
   const baseId = card.id.replace(/-(upright|reversed)-.+$/, "");
-  return tarotCardArtwork[baseId];
+  return tarotCardArtwork[baseId] || `/tarot-cards/${baseId}.svg`;
 }
 
 function TarotCardImage({ card, index, language }: { card: DrawnCard; index: number; language: LanguageStyle }) {
@@ -453,6 +453,7 @@ export function TarotVoiceApp() {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
   const [mode, setMode] = useState<"live" | "mock">("mock");
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [speechSupported, setSpeechSupported] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -724,43 +725,119 @@ export function TarotVoiceApp() {
   }
 
   return (
-    <main className="page-shell">
-      <header className="app-header">
-        <div>
-          <p className="eyebrow">{t.eyebrow}</p>
-          <h1>{t.title}</h1>
-        </div>
-
-        <div className="status-strip">
-          <span className={`pill ${mode === "live" ? "pill-live" : "pill-mock"}`}>{mode === "live" ? t.live : t.mock}</span>
+    <main className="chat-page">
+      <header className="chat-header">
+        <div className="chat-brand">
+          <span className="brand-mark" aria-hidden="true">✦</span>
           <div>
-            <span>{t.spread}</span>
-            <strong>{getSpreadLabel(latestSpread, spreadType, language)}</strong>
-          </div>
-          <div>
-            <span>{t.tone}</span>
-            <strong>{tone === "soft" ? t.warm : t.direct}</strong>
-          </div>
-          <div>
-            <span>{t.voiceIn}</span>
-            <strong>{speechSupported ? "Local Whisper" : t.textOnly}</strong>
-          </div>
-          <div>
-            <span>{t.voiceOut}</span>
-            <strong>{ttsMode === "openai" ? t.openaiTts : t.browser}</strong>
+            <h1>{t.title}</h1>
+            <span>{mode === "live" ? t.live : t.mock}</span>
           </div>
         </div>
+        <button
+          aria-label={t.callSetup as string}
+          className="icon-button"
+          onClick={() => setSettingsOpen(true)}
+          title={t.callSetup as string}
+          type="button"
+        >
+          <Settings aria-hidden="true" size={20} />
+        </button>
       </header>
 
-      <section className="workspace-grid">
-        <div className="control-panel">
-          <div className="panel-header">
-            <h2>{t.callSetup}</h2>
-            <button className="ghost-button" onClick={handleReset} type="button">
-              <RotateCcw aria-hidden="true" size={16} />
-              <span>{t.reset}</span>
+      <section className="chat-shell">
+        <div className="conversation-list" ref={listRef}>
+          {messages.map((message) => (
+            <article className={message.role === "assistant" ? "message assistant" : "message user"} key={message.id}>
+              <div className="message-meta">
+                <span>{message.role === "assistant" ? t.assistantName : t.userName}</span>
+                <span>{hydrated ? formatTime(message.createdAt) : "--:--"}</span>
+              </div>
+              {message.cards ? <SpreadReveal language={language} spread={message.cards} /> : null}
+              <MarkdownMessage content={message.content} />
+              {message.source ? <span className="message-source">{message.source === "voice" ? t.sourceVoice : t.sourceText}</span> : null}
+            </article>
+          ))}
+
+          {isThinking ? (
+            <article className="message assistant loading">
+              <div className="message-meta">
+                <span>{t.assistantName}</span>
+                <span>{t.now}</span>
+              </div>
+              <p>{t.loading}</p>
+            </article>
+          ) : null}
+        </div>
+
+        {messages.length <= 1 ? (
+          <div className="starter-prompts" aria-label={t.quickPromptsLabel as string}>
+            {quickPrompts.slice(0, 3).map((prompt) => (
+              <button key={prompt} onClick={() => setDraft(prompt)} type="button">{prompt}</button>
+            ))}
+          </div>
+        ) : null}
+
+        {error ? <div className="error-banner">{error}</div> : null}
+
+        <div className="chat-composer">
+          <textarea
+            aria-label={t.questionLabel as string}
+            id="question"
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                if (draft.trim() && !isThinking) {
+                  void submitTurn(draft, "text");
+                  setDraft("");
+                }
+              }
+            }}
+            placeholder={t.questionPlaceholder as string}
+            rows={2}
+            value={draft}
+          />
+          <div className="composer-toolbar">
+            <button
+              aria-label={t.speak as string}
+              className={isListening ? "composer-icon pulse" : "composer-icon"}
+              disabled={!speechSupported || isTranscribing}
+              onClick={() => void startListening()}
+              title={isTranscribing ? t.transcribing as string : t.speak as string}
+              type="button"
+            >
+              <Mic aria-hidden="true" size={19} />
+            </button>
+            <button
+              aria-label={t.send as string}
+              className="send-button"
+              disabled={!draft.trim() || isThinking}
+              onClick={() => {
+                void submitTurn(draft, "text");
+                setDraft("");
+              }}
+              title={t.send as string}
+              type="button"
+            >
+              {isThinking ? <Volume2 aria-hidden="true" size={19} /> : <Send aria-hidden="true" size={19} />}
             </button>
           </div>
+        </div>
+      </section>
+
+      {settingsOpen ? (
+        <div className="settings-layer" role="presentation" onMouseDown={() => setSettingsOpen(false)}>
+          <aside aria-label={t.callSetup as string} className="settings-drawer" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="drawer-header">
+              <div>
+                <span>{t.eyebrow}</span>
+                <h2>{t.callSetup}</h2>
+              </div>
+              <button aria-label="Close" className="icon-button" onClick={() => setSettingsOpen(false)} type="button">
+                <X aria-hidden="true" size={20} />
+              </button>
+            </div>
 
           <div className="control-group">
             <label>{t.spread}</label>
@@ -846,123 +923,13 @@ export function TarotVoiceApp() {
             <input checked={autoSpeak} onChange={() => setAutoSpeak((current) => !current)} type="checkbox" />
             <span>{t.autoSpeak}</span>
           </label>
-
-          <div className="composer-card">
-            <label htmlFor="question">{t.questionLabel}</label>
-            <textarea
-              id="question"
-              onChange={(event) => setDraft(event.target.value)}
-              placeholder={t.questionPlaceholder as string}
-              rows={6}
-              value={draft}
-            />
-
-            <div className="composer-actions">
-              <button
-                className={isListening ? "primary-button pulse" : "primary-button"}
-                disabled={!speechSupported || isTranscribing}
-                onClick={() => void startListening()}
-                type="button"
-                title={t.speak as string}
-              >
-                <Mic aria-hidden="true" size={18} />
-                <span>{isTranscribing ? t.transcribing : isListening ? t.listening : t.speak}</span>
-              </button>
-              <button
-                className="secondary-button"
-                disabled={!draft.trim() || isThinking}
-                onClick={() => {
-                  void submitTurn(draft, "text");
-                  setDraft("");
-                }}
-                type="button"
-                title={t.send as string}
-              >
-                {isThinking ? <Volume2 aria-hidden="true" size={18} /> : <Send aria-hidden="true" size={18} />}
-                <span>{isThinking ? t.reading : t.send}</span>
-              </button>
-            </div>
-
-            {!speechSupported ? (
-              <p className="support-note">{t.supportNote}</p>
-            ) : null}
-          </div>
-
-          <div className="quick-prompt-group">
-            <label>{t.quickPromptsLabel}</label>
-            <div className="chip-stack">
-              {quickPrompts.map((prompt) => (
-                <button
-                  className="prompt-chip"
-                  key={prompt}
-                  onClick={() => {
-                    setDraft(prompt);
-                  }}
-                  type="button"
-                >
-                  {prompt}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {latestSpread ? (
-            <div className="spread-panel">
-              <div className="panel-header compact">
-                <h2>{t.latestSpread}</h2>
-                <span>{latestSpread.spreadType === "three-card" ? t.threeSpreadHint : t.singleSpreadHint}</span>
-              </div>
-
-              <SpreadReveal compact language={language} spread={latestSpread} />
-            </div>
-          ) : null}
+          <button className="drawer-reset" onClick={handleReset} type="button">
+            <RotateCcw aria-hidden="true" size={16} />
+            <span>{t.reset}</span>
+          </button>
+          </aside>
         </div>
-
-        <div className="conversation-panel">
-          <div className="reading-stage">
-            <div>
-              <span className="stage-kicker">{isThinking ? t.drawing : latestSpread ? t.currentSpread : t.waiting}</span>
-              <h2>{latestSpread ? latestSpread.focusQuestion : t.stageEmptyTitle}</h2>
-            </div>
-            <p>
-              {isThinking
-                ? t.stageDrawing
-                : latestSpread
-                  ? t.stageHasSpread
-                  : t.stageEmpty}
-            </p>
-          </div>
-
-          {latestSpread ? <SpreadReveal language={language} spread={latestSpread} /> : <EmptySpread />}
-
-          <div className="conversation-list" ref={listRef}>
-            {messages.map((message) => (
-              <article className={message.role === "assistant" ? "message assistant" : "message user"} key={message.id}>
-                <div className="message-meta">
-                  <span>{message.role === "assistant" ? t.assistantName : t.userName}</span>
-                  <span>{hydrated ? formatTime(message.createdAt) : "--:--"}</span>
-                </div>
-                {message.cards ? <SpreadReveal language={language} spread={message.cards} /> : null}
-                <MarkdownMessage content={message.content} />
-                {message.source ? <span className="message-source">{message.source === "voice" ? t.sourceVoice : t.sourceText}</span> : null}
-              </article>
-            ))}
-
-            {isThinking ? (
-              <article className="message assistant loading">
-                <div className="message-meta">
-                  <span>{t.assistantName}</span>
-                  <span>{t.now}</span>
-                </div>
-                <p>{t.loading}</p>
-              </article>
-            ) : null}
-          </div>
-
-          {error ? <div className="error-banner">{error}</div> : null}
-
-        </div>
-      </section>
+      ) : null}
     </main>
   );
 }

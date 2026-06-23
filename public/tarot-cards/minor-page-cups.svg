@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1350" viewBox="0 0 450 675" role="img" aria-label="Page of Cups tarot card">
+  <defs>
+    <linearGradient id="bg-minor-page-cups" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#150f25"/>
+      <stop offset="0.48" stop-color="#251a36"/>
+      <stop offset="1" stop-color="#0b1421"/>
+    </linearGradient>
+    <radialGradient id="glow-minor-page-cups" cx="50%" cy="42%" r="52%">
+      <stop offset="0" stop-color="#5dbbd1" stop-opacity="0.82"/>
+      <stop offset="0.48" stop-color="#5dbbd1" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#5dbbd1" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="line-minor-page-cups" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#c6f1f6" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#c6f1f6" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#c6f1f6" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="450" height="675" rx="34" fill="url(#bg-minor-page-cups)"/>
+  <rect x="18" y="18" width="414" height="639" rx="28" fill="none" stroke="#c6f1f6" stroke-opacity="0.72" stroke-width="2"/>
+  <rect x="31" y="31" width="388" height="613" rx="22" fill="none" stroke="#fff7d8" stroke-opacity="0.16"/>
+  <circle cx="225" cy="302" r="170" fill="url(#glow-minor-page-cups)"/>
+  <circle cx="225" cy="302" r="118" fill="none" stroke="#c6f1f6" stroke-opacity="0.42" stroke-width="1.4"/>
+  <circle cx="225" cy="302" r="76" fill="none" stroke="#fff7d8" stroke-opacity="0.18" stroke-width="1"/>
+  <path d="M 58 147 C 150 56, 270 238, 392 139" fill="none" stroke="url(#line-minor-page-cups)" stroke-width="1.2" opacity="0.28"/><path d="M 62 201 C 150 147, 270 255, 387 193" fill="none" stroke="url(#line-minor-page-cups)" stroke-width="2" opacity="0.36000000000000004"/><path d="M 66 255 C 150 184, 270 326, 382 247" fill="none" stroke="url(#line-minor-page-cups)" stroke-width="1.2" opacity="0.44000000000000006"/><path d="M 70 309 C 150 221, 270 397, 377 301" fill="none" stroke="url(#line-minor-page-cups)" stroke-width="2" opacity="0.52"/><path d="M 74 363 C 150 312, 270 414, 372 355" fill="none" stroke="url(#line-minor-page-cups)" stroke-width="1.2" opacity="0.6000000000000001"/><circle cx="214" cy="139" r="1.32" fill="#fff7d8" opacity="0.22"/><circle cx="267" cy="200" r="1.74" fill="#fff7d8" opacity="0.3"/><circle cx="320" cy="261" r="2.16" fill="#fff7d8" opacity="0.38"/><circle cx="373" cy="322" r="0.90" fill="#fff7d8" opacity="0.45999999999999996"/><circle cx="86" cy="383" r="1.32" fill="#fff7d8" opacity="0.54"/><circle cx="139" cy="444" r="1.74" fill="#fff7d8" opacity="0.22"/><circle cx="192" cy="505" r="2.16" fill="#fff7d8" opacity="0.3"/><circle cx="245" cy="566" r="0.90" fill="#fff7d8" opacity="0.38"/><circle cx="298" cy="107" r="1.32" fill="#fff7d8" opacity="0.45999999999999996"/><circle cx="351" cy="168" r="1.74" fill="#fff7d8" opacity="0.54"/><circle cx="64" cy="229" r="2.16" fill="#fff7d8" opacity="0.22"/><circle cx="117" cy="290" r="0.90" fill="#fff7d8" opacity="0.3"/><circle cx="170" cy="351" r="1.32" fill="#fff7d8" opacity="0.38"/><circle cx="223" cy="412" r="1.74" fill="#fff7d8" opacity="0.45999999999999996"/><circle cx="276" cy="473" r="2.16" fill="#fff7d8" opacity="0.54"/><circle cx="329" cy="534" r="0.90" fill="#fff7d8" opacity="0.22"/><circle cx="382" cy="595" r="1.32" fill="#fff7d8" opacity="0.3"/><circle cx="95" cy="136" r="1.74" fill="#fff7d8" opacity="0.38"/>
+  <text x="225" y="70" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="23" letter-spacing="2" fill="#c6f1f6">☽</text>
+  <text x="225" y="333" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="102" fill="#c6f1f6" opacity="0.95">☽</text>
+  <text x="225" y="500" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="28" fill="#fff6da">Page of Cups</text>
+  <text x="225" y="580" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="13" letter-spacing="4" fill="#c6f1f6" opacity="0.78">CUPS</text>
+  <path d="M 86 612 H 364" stroke="#c6f1f6" stroke-opacity="0.42"/>
+  <text x="225" y="632" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="11" letter-spacing="3" fill="#fff6da" opacity="0.58">LUNA TAROT</text>
+</svg>

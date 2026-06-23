@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1350" viewBox="0 0 450 675" role="img" aria-label="Knight of Cups tarot card">
+  <defs>
+    <linearGradient id="bg-minor-knight-cups" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#150f25"/>
+      <stop offset="0.48" stop-color="#251a36"/>
+      <stop offset="1" stop-color="#0b1421"/>
+    </linearGradient>
+    <radialGradient id="glow-minor-knight-cups" cx="50%" cy="42%" r="52%">
+      <stop offset="0" stop-color="#5dbbd1" stop-opacity="0.82"/>
+      <stop offset="0.48" stop-color="#5dbbd1" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#5dbbd1" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="line-minor-knight-cups" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#c6f1f6" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#c6f1f6" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#c6f1f6" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="450" height="675" rx="34" fill="url(#bg-minor-knight-cups)"/>
+  <rect x="18" y="18" width="414" height="639" rx="28" fill="none" stroke="#c6f1f6" stroke-opacity="0.72" stroke-width="2"/>
+  <rect x="31" y="31" width="388" height="613" rx="22" fill="none" stroke="#fff7d8" stroke-opacity="0.16"/>
+  <circle cx="225" cy="302" r="170" fill="url(#glow-minor-knight-cups)"/>
+  <circle cx="225" cy="302" r="118" fill="none" stroke="#c6f1f6" stroke-opacity="0.42" stroke-width="1.4"/>
+  <circle cx="225" cy="302" r="76" fill="none" stroke="#fff7d8" stroke-opacity="0.18" stroke-width="1"/>
+  <path d="M 58 152 C 150 65, 270 239, 392 144" fill="none" stroke="url(#line-minor-knight-cups)" stroke-width="1.2" opacity="0.28"/><path d="M 62 206 C 150 156, 270 256, 387 198" fill="none" stroke="url(#line-minor-knight-cups)" stroke-width="2" opacity="0.36000000000000004"/><path d="M 66 260 C 150 193, 270 327, 382 252" fill="none" stroke="url(#line-minor-knight-cups)" stroke-width="1.2" opacity="0.44000000000000006"/><path d="M 70 314 C 150 230, 270 398, 377 306" fill="none" stroke="url(#line-minor-knight-cups)" stroke-width="2" opacity="0.52"/><path d="M 74 368 C 150 321, 270 415, 372 360" fill="none" stroke="url(#line-minor-knight-cups)" stroke-width="1.2" opacity="0.6000000000000001"/><circle cx="284" cy="209" r="2.16" fill="#fff7d8" opacity="0.22"/><circle cx="247" cy="270" r="0.90" fill="#fff7d8" opacity="0.3"/><circle cx="210" cy="331" r="1.32" fill="#fff7d8" opacity="0.38"/><circle cx="173" cy="392" r="1.74" fill="#fff7d8" opacity="0.45999999999999996"/><circle cx="136" cy="453" r="2.16" fill="#fff7d8" opacity="0.54"/><circle cx="99" cy="514" r="0.90" fill="#fff7d8" opacity="0.22"/><circle cx="62" cy="575" r="1.32" fill="#fff7d8" opacity="0.3"/><circle cx="365" cy="116" r="1.74" fill="#fff7d8" opacity="0.38"/><circle cx="328" cy="177" r="2.16" fill="#fff7d8" opacity="0.45999999999999996"/><circle cx="291" cy="238" r="0.90" fill="#fff7d8" opacity="0.54"/><circle cx="254" cy="299" r="1.32" fill="#fff7d8" opacity="0.22"/><circle cx="217" cy="360" r="1.74" fill="#fff7d8" opacity="0.3"/><circle cx="180" cy="421" r="2.16" fill="#fff7d8" opacity="0.38"/><circle cx="143" cy="482" r="0.90" fill="#fff7d8" opacity="0.45999999999999996"/><circle cx="106" cy="543" r="1.32" fill="#fff7d8" opacity="0.54"/><circle cx="69" cy="604" r="1.74" fill="#fff7d8" opacity="0.22"/><circle cx="372" cy="145" r="2.16" fill="#fff7d8" opacity="0.3"/><circle cx="335" cy="206" r="0.90" fill="#fff7d8" opacity="0.38"/>
+  <text x="225" y="70" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="23" letter-spacing="2" fill="#c6f1f6">☽</text>
+  <text x="225" y="333" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="102" fill="#c6f1f6" opacity="0.95">☽</text>
+  <text x="225" y="500" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="28" fill="#fff6da">Knight of Cups</text>
+  <text x="225" y="580" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="13" letter-spacing="4" fill="#c6f1f6" opacity="0.78">CUPS</text>
+  <path d="M 86 612 H 364" stroke="#c6f1f6" stroke-opacity="0.42"/>
+  <text x="225" y="632" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="11" letter-spacing="3" fill="#fff6da" opacity="0.58">LUNA TAROT</text>
+</svg>
