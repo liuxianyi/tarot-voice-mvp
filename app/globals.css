@@ -1070,6 +1070,7 @@ code {
   flex: 1;
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr);
+  overflow: hidden;
 }
 
 .app-workspace.history-collapsed {
@@ -1272,7 +1273,8 @@ code {
 
 .chat-page.is-chat .chat-shell {
   width: 100%;
-  height: 100dvh;
+  height: 100%;
+  min-height: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   overflow: hidden;
@@ -1284,6 +1286,10 @@ code {
   width: 100%;
   margin: 0;
   padding: 10px 0 0;
+}
+
+.chat-page.is-chat .chat-agent-hero {
+  grid-row: 1;
 }
 
 .agent-title-row {
@@ -1405,8 +1411,10 @@ code {
 }
 
 .chat-page.is-chat .conversation-list {
+  grid-row: 2;
   width: 100%;
   height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 38px;
@@ -1483,6 +1491,8 @@ code {
 }
 
 .chat-page.is-chat .starter-prompts {
+  grid-row: 2;
+  align-self: end;
   width: min(1000px, 100%);
   display: flex;
   flex-wrap: wrap;
@@ -1612,6 +1622,8 @@ code {
 }
 
 .chat-page.is-chat .chat-composer {
+  grid-row: 3;
+  align-self: end;
   width: min(1060px, calc(100% - 80px));
   margin: 0 auto;
   border-color: #c9ccd4;
