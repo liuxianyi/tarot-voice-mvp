@@ -25,6 +25,10 @@ const uiText = {
       "我是 Luna。你可以告诉我一段关系、一次职业选择、金钱压力，或任何正在消化的心结。如果问题已经足够清楚，我会先抽牌，再解读；如果还太模糊，我只会先问一个简短的澄清问题。",
     quickPrompts: ["我刚失恋，想看看这段关系给我的提醒。", "我最近在考虑离职，想知道自己没看见什么。", "我和对方的关系很暧昧，我该继续吗？", "我对钱和未来很焦虑，下一步该怎么走？"],
     readingModesLabel: "占卜形式",
+    homeGreeting: "Hi，今天想问什么？",
+    modeStripLabel: "当前占卜形式",
+    modeCatalogTitle: "选择一种占卜形式开始",
+    workScope: "在 Luna 塔罗中工作",
     classicMode: "三张牌",
     yesNoMode: "是或否",
     dailyMode: "每日指引",
@@ -121,6 +125,10 @@ const uiText = {
       "What is the next clean step for my side project?"
     ],
     readingModesLabel: "Reading type",
+    homeGreeting: "Hi, what would you like to ask today?",
+    modeStripLabel: "Current reading type",
+    modeCatalogTitle: "Choose a reading type to begin",
+    workScope: "Working in Luna Tarot",
     classicMode: "Three cards",
     yesNoMode: "Yes or No",
     dailyMode: "Daily guide",
@@ -561,6 +569,7 @@ export function TarotVoiceApp() {
   const [isListening, setIsListening] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const [mode, setMode] = useState<"live" | "mock">("mock");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -728,6 +737,7 @@ export function TarotVoiceApp() {
 
     setError(null);
     setIsThinking(true);
+    setChatOpen(true);
 
     const userMessage = createMessage("user", text, source, null);
     const historyForRequest = [...messagesRef.current, userMessage].slice(-MAX_HISTORY);
@@ -784,6 +794,7 @@ export function TarotVoiceApp() {
     }
     setDraft("");
     setError(null);
+    setChatOpen(false);
     setMessages([createIntroMessage(language)]);
     window.localStorage.removeItem(STORAGE_KEY);
   }
@@ -852,7 +863,7 @@ export function TarotVoiceApp() {
   }
 
   return (
-    <main className="chat-page">
+    <main className={chatOpen ? "chat-page is-chat" : "chat-page is-home"}>
       <header className="chat-header">
         <div className="chat-brand">
           <span className="brand-mark" aria-hidden="true">✦</span>
@@ -873,60 +884,39 @@ export function TarotVoiceApp() {
       </header>
 
       <section className="chat-shell">
-        <div className="conversation-list" ref={listRef}>
-          {messages.map((message) => (
-            <article className={message.role === "assistant" ? "message assistant" : "message user"} key={message.id}>
-              <div className="message-meta">
-                <span>{message.role === "assistant" ? t.assistantName : t.userName}</span>
-                <span>{hydrated ? formatTime(message.createdAt) : "--:--"}</span>
-              </div>
-              {message.cards ? <SpreadReveal language={language} spread={message.cards} /> : null}
-              <MarkdownMessage content={message.content} />
-              {message.source ? <span className="message-source">{message.source === "voice" ? t.sourceVoice : t.sourceText}</span> : null}
-            </article>
-          ))}
-
-          {isThinking ? (
-            <article className="message assistant loading">
-              <div className="message-meta">
-                <span>{t.assistantName}</span>
-                <span>{t.now}</span>
-              </div>
-              <p>{t.loading}</p>
-            </article>
-          ) : null}
+        {!chatOpen ? (
+        <div className="home-hero">
+          <h2>{t.homeGreeting}</h2>
+          <button className="mode-strip" aria-label={t.modeStripLabel as string} onClick={() => setChatOpen(true)} type="button">
+            <span className="mode-strip-brand">
+              <span className="brand-dot" aria-hidden="true">✦</span>
+              {selectedMode.label}
+            </span>
+            <span aria-hidden="true">|</span>
+            <span aria-hidden="true">☉</span>
+            <span aria-hidden="true">|</span>
+            <span aria-hidden="true">☽</span>
+            <span aria-hidden="true">|</span>
+            <span aria-hidden="true">✧</span>
+            <span aria-hidden="true">|</span>
+            <span aria-hidden="true">＋</span>
+          </button>
         </div>
+        ) : null}
 
-        <div className="reading-modes" aria-label={t.readingModesLabel as string}>
-          {readingModes.map((item) => {
-            const defaultPrompt = defaultPromptForMode(item.mode, t);
-            const canAutoSubmit = Boolean(defaultPrompt);
-
-            return (
-              <button
-                className={readingMode === item.mode ? "reading-mode active" : "reading-mode"}
-                disabled={isThinking}
-                key={item.mode}
-                onClick={() => {
-                  changeReadingMode(item.mode);
-                  if (canAutoSubmit) {
-                    void submitTurn(defaultPrompt, "text", item.mode);
-                  }
-                }}
-                type="button"
-              >
-                <strong>{item.label}</strong>
-                <span>{item.hint}</span>
+        {chatOpen ? (
+          <div className="chat-agent-hero">
+            <div className="agent-title-row">
+              <button aria-label="Back" className="agent-back" onClick={() => setChatOpen(false)} type="button">
+                ‹
               </button>
-            );
-          })}
-        </div>
-
-        {messages.length <= 1 && !defaultPromptForMode(readingMode, t) ? (
-          <div className="starter-prompts" aria-label={t.quickPromptsLabel as string}>
-            {quickPrompts.slice(0, 3).map((prompt) => (
-              <button key={prompt} onClick={() => setDraft(prompt)} type="button">{prompt}</button>
-            ))}
+              <span className="agent-avatar" aria-hidden="true">✦</span>
+              <h2>{selectedMode.label}</h2>
+              <button aria-label={t.callSetup as string} className="agent-edit" onClick={() => setSettingsOpen(true)} type="button">
+                ✎
+              </button>
+            </div>
+            <p className="agent-description">{instructionForMode(readingMode, language).replace(/^模式：|^Mode: /, "")}</p>
           </div>
         ) : null}
 
@@ -977,7 +967,78 @@ export function TarotVoiceApp() {
               {isThinking ? <Volume2 aria-hidden="true" size={19} /> : <Send aria-hidden="true" size={19} />}
             </button>
           </div>
+          <div className="composer-scope">
+            <span aria-hidden="true">□</span>
+            <span>{t.workScope}</span>
+          </div>
         </div>
+
+        {chatOpen && messages.length <= 1 && !defaultPromptForMode(readingMode, t) ? (
+          <div className="starter-prompts" aria-label={t.quickPromptsLabel as string}>
+            {quickPrompts.slice(0, 3).map((prompt) => (
+              <button key={prompt} onClick={() => setDraft(prompt)} type="button">{prompt}</button>
+            ))}
+          </div>
+        ) : null}
+
+        {chatOpen && messages.some((message) => message.id !== "intro") ? (
+          <div className="conversation-list" ref={listRef}>
+            {messages.map((message) => (
+              <article className={message.role === "assistant" ? "message assistant" : "message user"} key={message.id}>
+                <div className="message-meta">
+                  <span>{message.role === "assistant" ? t.assistantName : t.userName}</span>
+                  <span>{hydrated ? formatTime(message.createdAt) : "--:--"}</span>
+                </div>
+                {message.cards ? <SpreadReveal language={language} spread={message.cards} /> : null}
+                <MarkdownMessage content={message.content} />
+                {message.source ? <span className="message-source">{message.source === "voice" ? t.sourceVoice : t.sourceText}</span> : null}
+              </article>
+            ))}
+
+            {isThinking ? (
+              <article className="message assistant loading">
+                <div className="message-meta">
+                  <span>{t.assistantName}</span>
+                  <span>{t.now}</span>
+                </div>
+                <p>{t.loading}</p>
+              </article>
+            ) : null}
+          </div>
+        ) : null}
+
+        {!chatOpen ? (
+        <div className="mode-catalog">
+          <p>{t.modeCatalogTitle}</p>
+          <div className="reading-modes" aria-label={t.readingModesLabel as string}>
+            {readingModes.map((item) => {
+              const defaultPrompt = defaultPromptForMode(item.mode, t);
+              const canAutoSubmit = Boolean(defaultPrompt);
+
+              return (
+                <button
+                  className={readingMode === item.mode ? "reading-mode active" : "reading-mode"}
+                  disabled={isThinking}
+                  key={item.mode}
+                  onClick={() => {
+                    changeReadingMode(item.mode);
+                    if (canAutoSubmit) {
+                      void submitTurn(defaultPrompt, "text", item.mode);
+                    }
+                  }}
+                  type="button"
+                >
+                  <span className="reading-mode-avatar" aria-hidden="true">✦</span>
+                  <span>
+                    <strong>{item.label}</strong>
+                    <span>{item.hint}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        ) : null}
       </section>
 
       {settingsOpen ? (
