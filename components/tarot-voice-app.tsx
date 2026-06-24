@@ -613,6 +613,7 @@ export function TarotVoiceApp() {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(true);
   const [mode, setMode] = useState<"live" | "mock">("mock");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -987,6 +988,15 @@ export function TarotVoiceApp() {
             <h1>{t.title}</h1>
             <span>{mode === "live" ? t.live : t.mock}</span>
           </div>
+          <button
+            aria-label={historyOpen ? "关闭历史占卜" : "打开历史占卜"}
+            className="history-toggle"
+            onClick={() => setHistoryOpen((current) => !current)}
+            title={historyOpen ? "关闭历史占卜" : "打开历史占卜"}
+            type="button"
+          >
+            {historyOpen ? "‹" : "›"}
+          </button>
         </div>
         <button
           aria-label={t.callSetup as string}
@@ -999,11 +1009,13 @@ export function TarotVoiceApp() {
         </button>
       </header>
 
-      <div className="app-workspace">
-      <aside className="history-sidebar" aria-label={t.historyTitle as string}>
+      <div className={historyOpen ? "app-workspace" : "app-workspace history-collapsed"}>
+      {historyOpen ? <aside className="history-sidebar" aria-label={t.historyTitle as string}>
         <div className="history-header">
-          <strong>{t.historyTitle}</strong>
-          <button className="history-new" onClick={handleReset} type="button">{t.newReading}</button>
+          <button className="history-new" onClick={handleReset} type="button">
+            <span aria-hidden="true">+</span>
+            <strong>{t.newReading}</strong>
+          </button>
         </div>
         <div className="history-list">
           {visibleSessions.length ? (
@@ -1022,7 +1034,7 @@ export function TarotVoiceApp() {
             <p>{t.emptyHistory}</p>
           )}
         </div>
-      </aside>
+      </aside> : null}
 
       <section className="chat-shell">
         {!chatOpen ? (

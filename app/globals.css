@@ -1072,6 +1072,10 @@ code {
   grid-template-columns: 260px minmax(0, 1fr);
 }
 
+.app-workspace.history-collapsed {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .history-sidebar {
   min-height: 0;
   display: flex;
@@ -1084,25 +1088,36 @@ code {
 .history-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
   margin-bottom: 14px;
 }
 
-.history-header strong {
-  color: #20242b;
-  font-size: 16px;
+.history-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  border: 0;
+  color: #101317;
+  background: transparent;
+  padding: 0;
+  font-size: 18px;
   font-weight: 900;
 }
 
-.history-new {
-  border: 0;
-  border-radius: 999px;
-  color: #4f5866;
-  background: #fff;
-  padding: 7px 10px;
-  font-size: 12px;
-  font-weight: 800;
+.history-new span {
+  width: 36px;
+  height: 36px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 8px;
+  color: #16191f;
+  background: #e8ebf1;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.history-new strong {
+  font-size: 18px;
+  font-weight: 900;
 }
 
 .history-list {
@@ -1172,6 +1187,24 @@ code {
   display: flex;
   align-items: center;
   gap: 11px;
+}
+
+.history-toggle {
+  width: 30px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: #6f7784;
+  background: rgba(238, 240, 243, 0.9);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.history-toggle:hover {
+  color: #20242b;
+  background: #fff;
 }
 
 .brand-mark {
