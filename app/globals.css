@@ -545,11 +545,6 @@ code {
   height: 100%;
   display: block;
   object-fit: contain;
-  transition: transform 420ms ease;
-}
-
-.tarot-card-image.has-artwork.is-reversed .tarot-card-artwork {
-  transform: rotate(180deg);
 }
 
 .tarot-card-sky,

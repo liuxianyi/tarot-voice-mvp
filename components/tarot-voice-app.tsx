@@ -355,12 +355,12 @@ function displayArcana(card: DrawnCard, language: LanguageStyle) {
 }
 
 const tarotCardArtwork: Record<string, string> = {
-  "major-fool": "/tarot-cards/major-fool.png"
+  "major-fool": "/tarot-cards/major-fool.webp"
 };
 
 function getTarotCardArtwork(card: DrawnCard) {
   const baseId = card.id.replace(/-(upright|reversed)-.+$/, "");
-  return `${tarotCardArtwork[baseId] || `/tarot-cards/${baseId}.png`}?v=ai-png-deck-20260624`;
+  return `${tarotCardArtwork[baseId] || `/tarot-cards/${baseId}.webp`}?v=webp-deck-20260624`;
 }
 
 function TarotCardImage({ card, index, language }: { card: DrawnCard; index: number; language: LanguageStyle }) {
