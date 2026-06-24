@@ -1,6 +1,23 @@
 "use client";
 
-import { Mic, RotateCcw, Send, Settings, Sparkles, Volume2, X } from "lucide-react";
+import {
+  BadgeQuestionMark,
+  BookOpen,
+  Bot,
+  CalendarDays,
+  CalendarRange,
+  Heart,
+  LockKeyhole,
+  Mic,
+  Moon,
+  PanelTop,
+  RotateCcw,
+  Send,
+  Settings,
+  Sparkles,
+  Volume2,
+  X
+} from "lucide-react";
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import type {
@@ -14,6 +31,8 @@ import type {
   TarotTurnResponse,
   ToneStyle
 } from "@/lib/types";
+
+type ModeIcon = typeof Sparkles;
 
 const STORAGE_KEY = "tarot-voice-mvp-history";
 const SESSIONS_STORAGE_KEY = "tarot-voice-mvp-sessions";
@@ -323,6 +342,18 @@ function requestTextForMode(userText: string, mode: ReadingMode, language: Langu
   const label = language === "zh" ? "用户问题" : "User question";
   return `${instructionForMode(mode, language)}\n\n${label}: ${userText}`;
 }
+
+const modeIconMap = {
+  classic: PanelTop,
+  "yes-no": BadgeQuestionMark,
+  daily: CalendarDays,
+  relationship: Heart,
+  forecast: CalendarRange,
+  learning: BookOpen,
+  private: LockKeyhole,
+  message: Moon,
+  ai: Bot
+} satisfies Record<ReadingMode, ModeIcon>;
 
 function formatTime(iso: string) {
   return new Intl.DateTimeFormat(undefined, {
@@ -1142,10 +1173,11 @@ export function TarotVoiceApp() {
             {readingModes.map((item) => {
               const defaultPrompt = defaultPromptForMode(item.mode, t);
               const canAutoSubmit = Boolean(defaultPrompt);
+              const ModeIcon = modeIconMap[item.mode];
 
               return (
                 <button
-                  className={readingMode === item.mode ? "reading-mode active" : "reading-mode"}
+                  className={["reading-mode", `mode-${item.mode}`, readingMode === item.mode ? "active" : ""].filter(Boolean).join(" ")}
                   disabled={isThinking}
                   key={item.mode}
                   onClick={() => {
@@ -1157,7 +1189,7 @@ export function TarotVoiceApp() {
                   type="button"
                 >
                   <span className="reading-mode-avatar" aria-hidden="true">
-                    <Sparkles size={18} strokeWidth={1.7} />
+                    <ModeIcon size={21} strokeWidth={1.7} />
                   </span>
                   <span>
                     <strong>{item.label}</strong>

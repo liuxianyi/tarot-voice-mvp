@@ -2295,9 +2295,15 @@ code {
 
 .reading-mode {
   min-height: 92px;
+  position: relative;
+  isolation: isolate;
   border-color: rgba(231, 188, 122, 0.16);
   border-radius: 14px;
   color: rgba(235, 216, 181, 0.62);
+  --mode-icon: #e4bd7d;
+  --mode-glow: rgba(229, 172, 93, 0.28);
+  --mode-sheen: rgba(255, 242, 210, 0.16);
+  --mode-ink: rgba(50, 39, 30, 0.88);
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.025)),
     rgba(27, 24, 22, 0.78);
@@ -2311,6 +2317,19 @@ code {
     box-shadow 220ms ease;
 }
 
+.reading-mode::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 18% 22%, var(--mode-glow), transparent 34%),
+    radial-gradient(circle at 92% 18%, var(--mode-sheen), transparent 28%);
+  opacity: 0.54;
+  transition: opacity 220ms ease, transform 240ms ease;
+}
+
 .reading-mode:nth-child(2n) {
   transform: translateY(10px);
 }
@@ -2322,13 +2341,19 @@ code {
 .reading-mode:hover,
 .reading-mode.active {
   transform: translateY(-3px);
-  border-color: rgba(231, 188, 122, 0.38);
+  border-color: color-mix(in srgb, var(--mode-icon) 46%, transparent);
   background:
     linear-gradient(135deg, rgba(229, 172, 93, 0.14), rgba(255, 255, 255, 0.035)),
     rgba(32, 27, 24, 0.92);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 22px 48px rgba(6, 5, 4, 0.28);
+}
+
+.reading-mode:hover::before,
+.reading-mode.active::before {
+  opacity: 0.88;
+  transform: scale(1.01);
 }
 
 .reading-mode strong {
@@ -2340,12 +2365,101 @@ code {
 
 .reading-mode > span:not(.reading-mode-avatar) > span {
   color: rgba(235, 216, 181, 0.58);
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
 }
 
 .reading-mode-avatar {
-  border: 1px solid rgba(231, 188, 122, 0.22);
-  color: #e4bd7d;
-  background: rgba(229, 172, 93, 0.12);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--mode-icon) 34%, transparent);
+  color: var(--mode-icon);
+  background:
+    radial-gradient(circle at 34% 22%, rgba(255, 255, 255, 0.34), transparent 20%),
+    radial-gradient(circle at 72% 82%, var(--mode-glow), transparent 46%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.1), var(--mode-ink));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 10px 24px color-mix(in srgb, var(--mode-glow) 72%, transparent);
+}
+
+.reading-mode-avatar::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid color-mix(in srgb, var(--mode-icon) 26%, transparent);
+  border-radius: inherit;
+  opacity: 0.72;
+}
+
+.reading-mode-avatar svg {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--mode-icon) 26%, transparent));
+}
+
+.mode-classic {
+  --mode-icon: #e7bc7a;
+  --mode-glow: rgba(231, 188, 122, 0.28);
+  --mode-sheen: rgba(255, 244, 214, 0.15);
+  --mode-ink: rgba(54, 39, 27, 0.9);
+}
+
+.mode-yes-no {
+  --mode-icon: #d9d4c4;
+  --mode-glow: rgba(217, 212, 196, 0.25);
+  --mode-sheen: rgba(255, 255, 255, 0.16);
+  --mode-ink: rgba(37, 39, 43, 0.92);
+}
+
+.mode-daily {
+  --mode-icon: #f2c76c;
+  --mode-glow: rgba(242, 199, 108, 0.34);
+  --mode-sheen: rgba(255, 241, 176, 0.18);
+  --mode-ink: rgba(69, 48, 19, 0.9);
+}
+
+.mode-relationship {
+  --mode-icon: #f0a0a7;
+  --mode-glow: rgba(240, 103, 132, 0.26);
+  --mode-sheen: rgba(255, 214, 220, 0.16);
+  --mode-ink: rgba(62, 31, 38, 0.92);
+}
+
+.mode-forecast {
+  --mode-icon: #9dc5e8;
+  --mode-glow: rgba(100, 154, 204, 0.27);
+  --mode-sheen: rgba(210, 232, 255, 0.14);
+  --mode-ink: rgba(28, 43, 58, 0.92);
+}
+
+.mode-learning {
+  --mode-icon: #b9c8ff;
+  --mode-glow: rgba(120, 144, 215, 0.25);
+  --mode-sheen: rgba(222, 229, 255, 0.14);
+  --mode-ink: rgba(34, 39, 70, 0.92);
+}
+
+.mode-private {
+  --mode-icon: #cbb3f5;
+  --mode-glow: rgba(154, 113, 215, 0.24);
+  --mode-sheen: rgba(232, 218, 255, 0.14);
+  --mode-ink: rgba(46, 34, 64, 0.92);
+}
+
+.mode-message {
+  --mode-icon: #d7d0ff;
+  --mode-glow: rgba(178, 166, 255, 0.24);
+  --mode-sheen: rgba(236, 232, 255, 0.13);
+  --mode-ink: rgba(37, 35, 61, 0.92);
+}
+
+.mode-ai {
+  --mode-icon: #98decf;
+  --mode-glow: rgba(92, 199, 178, 0.24);
+  --mode-sheen: rgba(204, 255, 244, 0.13);
+  --mode-ink: rgba(26, 55, 51, 0.92);
 }
 
 .starter-prompts button,
