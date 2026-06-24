@@ -16,6 +16,7 @@ That choice is deliberate. OpenAI's voice-agent guidance says chained voice pipe
 - A polished single-page web UI with a tarot-room visual theme
 - A voice-first home flow with reading-type shortcuts
 - A persistent history sidebar with new-reading and settings controls
+- Mobile layout keeps the history panel as a compact side rail instead of moving it to the top
 - A left-bottom settings popover for tone, language, and speech output
 - Browser audio recording through `MediaRecorder`, transcribed locally with MLX Whisper
 - `/api/tarot/turn` for the tarot brain
@@ -171,6 +172,7 @@ Keep the tarot logic exactly as-is and only swap the audio layer.
 - The interface keeps the tarot experience primary: the first screen is the usable reading surface, not a marketing landing page.
 - Current styling uses a dark charcoal tarot-room palette with a restrained copper-gold accent.
 - The history sidebar supports tactile hover and active states for new readings, history items, and settings.
+- On phone-sized screens, the history sidebar remains on the side so navigation stays spatially consistent.
 - Tarot is framed as reflection and guidance, not certainty.
 
 ## Production next steps
