@@ -3,6 +3,7 @@ export type ToneStyle = "soft" | "direct";
 export type MessageSource = "text" | "voice";
 export type ModeKind = "live" | "mock";
 export type LanguageStyle = "zh" | "en";
+export type ReadingMode = "classic" | "yes-no" | "daily";
 
 export interface DrawnCard {
   id: string;

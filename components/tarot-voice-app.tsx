@@ -8,6 +8,7 @@ import type {
   DrawnSpread,
   LanguageStyle,
   MessageSource,
+  ReadingMode,
   SpreadType,
   TarotChatMessage,
   TarotTurnResponse,
@@ -23,6 +24,15 @@ const uiText = {
     intro:
       "我是 Luna。你可以告诉我一段关系、一次职业选择、金钱压力，或任何正在消化的心结。如果问题已经足够清楚，我会先抽牌，再解读；如果还太模糊，我只会先问一个简短的澄清问题。",
     quickPrompts: ["我刚失恋，想看看这段关系给我的提醒。", "我最近在考虑离职，想知道自己没看见什么。", "我和对方的关系很暧昧，我该继续吗？", "我对钱和未来很焦虑，下一步该怎么走？"],
+    readingModesLabel: "占卜形式",
+    classicMode: "三张牌",
+    yesNoMode: "是或否",
+    dailyMode: "每日指引",
+    classicHint: "说出具体情况，Luna 默认抽三张牌。",
+    yesNoHint: "问一个能回答倾向的问题，Luna 抽一张牌。",
+    dailyHint: "不用输入问题，抽今天的一张指引。",
+    dailyQuestion: "请为我抽一张今天的塔罗指引牌，看看我今天最需要留意什么，以及可以采取的一个行动。",
+    dailyButton: "抽今日指引",
     eyebrow: "Luna 会先抽牌，再解读",
     title: "Luna 语音塔罗",
     spread: "牌阵",
@@ -90,6 +100,15 @@ const uiText = {
       "What am I not seeing about my money stress?",
       "What is the next clean step for my side project?"
     ],
+    readingModesLabel: "Reading type",
+    classicMode: "Three cards",
+    yesNoMode: "Yes or No",
+    dailyMode: "Daily guide",
+    classicHint: "Describe a specific situation. Luna draws three cards by default.",
+    yesNoHint: "Ask one question with a clear leaning. Luna draws one card.",
+    dailyHint: "No typing needed. Draw one card for today.",
+    dailyQuestion: "Please draw one tarot card as my guidance for today. Show what I most need to notice today and one action I can take.",
+    dailyButton: "Draw today",
     eyebrow: "Luna reads after the cards are drawn",
     title: "Luna Voice Tarot",
     spread: "Spread",
@@ -169,6 +188,10 @@ function createMessage(role: "user" | "assistant", content: string, source?: Mes
     cards: cards || null,
     createdAt: new Date().toISOString()
   } satisfies TarotChatMessage;
+}
+
+function spreadForMode(mode: ReadingMode, fallback: SpreadType): SpreadType {
+  return mode === "classic" ? fallback : "single-card";
 }
 
 function formatTime(iso: string) {
@@ -445,6 +468,7 @@ export function TarotVoiceApp() {
   const [language, setLanguage] = useState<LanguageStyle>("zh");
   const [messages, setMessages] = useState<TarotChatMessage[]>([createIntroMessage("zh")]);
   const [draft, setDraft] = useState("");
+  const [readingMode, setReadingMode] = useState<ReadingMode>("classic");
   const [spreadType, setSpreadType] = useState<SpreadType>("three-card");
   const [tone, setTone] = useState<ToneStyle>("soft");
   const [ttsMode, setTtsMode] = useState<"browser" | "openai">("browser");
@@ -466,6 +490,8 @@ export function TarotVoiceApp() {
   const listRef = useRef<HTMLDivElement | null>(null);
   const t = uiText[language];
   const quickPrompts = t.quickPrompts as string[];
+  const selectedModeHint =
+    readingMode === "yes-no" ? (t.yesNoHint as string) : readingMode === "daily" ? (t.dailyHint as string) : (t.classicHint as string);
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -597,7 +623,7 @@ export function TarotVoiceApp() {
     window.speechSynthesis.speak(utterance);
   }
 
-  async function submitTurn(rawText: string, source: MessageSource) {
+  async function submitTurn(rawText: string, source: MessageSource, requestedMode: ReadingMode = readingMode) {
     const text = rawText.trim();
 
     if (!text || isThinking) {
@@ -623,7 +649,7 @@ export function TarotVoiceApp() {
         body: JSON.stringify({
           history: messagesRef.current,
           userMessage: text,
-          spreadType,
+          spreadType: spreadForMode(requestedMode, spreadType),
           tone,
           language,
           channel: source === "voice" ? "web-voice" : "web-text"
@@ -724,6 +750,16 @@ export function TarotVoiceApp() {
     setMessages((current) => (current.length === 1 && current[0].id === "intro" ? [createIntroMessage(nextLanguage)] : current));
   }
 
+  function changeReadingMode(nextMode: ReadingMode) {
+    setReadingMode(nextMode);
+
+    if (nextMode === "classic") {
+      setSpreadType("three-card");
+    } else {
+      setSpreadType("single-card");
+    }
+  }
+
   return (
     <main className="chat-page">
       <header className="chat-header">
@@ -770,7 +806,38 @@ export function TarotVoiceApp() {
           ) : null}
         </div>
 
-        {messages.length <= 1 ? (
+        <div className="reading-modes" aria-label={t.readingModesLabel as string}>
+          <button
+            className={readingMode === "classic" ? "reading-mode active" : "reading-mode"}
+            onClick={() => changeReadingMode("classic")}
+            type="button"
+          >
+            <strong>{t.classicMode}</strong>
+            <span>{t.classicHint}</span>
+          </button>
+          <button
+            className={readingMode === "yes-no" ? "reading-mode active" : "reading-mode"}
+            onClick={() => changeReadingMode("yes-no")}
+            type="button"
+          >
+            <strong>{t.yesNoMode}</strong>
+            <span>{t.yesNoHint}</span>
+          </button>
+          <button
+            className={readingMode === "daily" ? "reading-mode active" : "reading-mode"}
+            disabled={isThinking}
+            onClick={() => {
+              changeReadingMode("daily");
+              void submitTurn(t.dailyQuestion as string, "text", "daily");
+            }}
+            type="button"
+          >
+            <strong>{t.dailyMode}</strong>
+            <span>{t.dailyButton}</span>
+          </button>
+        </div>
+
+        {messages.length <= 1 && readingMode !== "daily" ? (
           <div className="starter-prompts" aria-label={t.quickPromptsLabel as string}>
             {quickPrompts.slice(0, 3).map((prompt) => (
               <button key={prompt} onClick={() => setDraft(prompt)} type="button">{prompt}</button>
@@ -794,10 +861,11 @@ export function TarotVoiceApp() {
                 }
               }
             }}
-            placeholder={t.questionPlaceholder as string}
+            placeholder={readingMode === "daily" ? (t.dailyQuestion as string) : (t.questionPlaceholder as string)}
             rows={2}
             value={draft}
           />
+          <p className="composer-hint">{selectedModeHint}</p>
           <div className="composer-toolbar">
             <button
               aria-label={t.speak as string}
@@ -812,9 +880,10 @@ export function TarotVoiceApp() {
             <button
               aria-label={t.send as string}
               className="send-button"
-              disabled={!draft.trim() || isThinking}
+              disabled={(!draft.trim() && readingMode !== "daily") || isThinking}
               onClick={() => {
-                void submitTurn(draft, "text");
+                const text = readingMode === "daily" && !draft.trim() ? (t.dailyQuestion as string) : draft;
+                void submitTurn(text, "text", readingMode);
                 setDraft("");
               }}
               title={t.send as string}
@@ -844,14 +913,20 @@ export function TarotVoiceApp() {
             <div className="toggle-row">
               <button
                 className={spreadType === "three-card" ? "toggle-button active" : "toggle-button"}
-                onClick={() => setSpreadType("three-card")}
+                onClick={() => {
+                  setReadingMode("classic");
+                  setSpreadType("three-card");
+                }}
                 type="button"
               >
                 {t.threeCards}
               </button>
               <button
                 className={spreadType === "single-card" ? "toggle-button active" : "toggle-button"}
-                onClick={() => setSpreadType("single-card")}
+                onClick={() => {
+                  setReadingMode("classic");
+                  setSpreadType("single-card");
+                }}
                 type="button"
               >
                 {t.singleCard}
