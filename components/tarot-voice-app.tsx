@@ -29,7 +29,6 @@ const uiText = {
     homeGreeting: "让牌面照见此刻的答案",
     modeStripLabel: "当前占卜形式",
     modeCatalogTitle: "选择一种占卜形式开始",
-    workScope: "在 Luna 塔罗中工作",
     historyTitle: "历史占卜",
     emptyHistory: "暂无历史记录",
     newReading: "新的占卜",
@@ -62,7 +61,7 @@ const uiText = {
     messageButton: "收传讯",
     aiButton: "AI 分析",
     eyebrow: "Luna 会先抽牌，再解读",
-    title: "Luna 语音塔罗",
+    title: "Tarot",
     spread: "牌阵",
     threeCards: "三张牌",
     singleCard: "单张牌",
@@ -132,7 +131,6 @@ const uiText = {
     homeGreeting: "Let the cards reflect this moment",
     modeStripLabel: "Current reading type",
     modeCatalogTitle: "Choose a reading type to begin",
-    workScope: "Working in Luna Tarot",
     historyTitle: "Reading history",
     emptyHistory: "No readings yet",
     newReading: "New reading",
@@ -165,7 +163,7 @@ const uiText = {
     messageButton: "Receive",
     aiButton: "Analyze",
     eyebrow: "Luna reads after the cards are drawn",
-    title: "Luna Voice Tarot",
+    title: "Tarot",
     spread: "Spread",
     threeCards: "Three cards",
     singleCard: "Single card",
@@ -983,19 +981,22 @@ export function TarotVoiceApp() {
     <main className={chatOpen ? "chat-page is-chat" : "chat-page is-home"}>
       <header className="chat-header">
         <div className="chat-brand">
-          <span className="brand-mark" aria-hidden="true">✦</span>
           <div>
             <h1>{t.title}</h1>
             <span>{mode === "live" ? t.live : t.mock}</span>
           </div>
+          <img className="brand-art" src="/brand/tarot-icon.webp" alt="" aria-hidden="true" />
           <button
             aria-label={historyOpen ? "关闭历史占卜" : "打开历史占卜"}
-            className="history-toggle"
+            className={historyOpen ? "history-toggle" : "history-toggle is-collapsed"}
             onClick={() => setHistoryOpen((current) => !current)}
             title={historyOpen ? "关闭历史占卜" : "打开历史占卜"}
             type="button"
           >
-            {historyOpen ? "‹" : "›"}
+            <span className="history-toggle-icon" aria-hidden="true">
+              <span />
+              <span />
+            </span>
           </button>
         </div>
         <button
@@ -1051,6 +1052,18 @@ export function TarotVoiceApp() {
               </button>
               <span className="agent-avatar" aria-hidden="true">✦</span>
               <h2>{selectedMode.label}</h2>
+              <button
+                aria-label={historyOpen ? "关闭历史占卜" : "打开历史占卜"}
+                className={historyOpen ? "history-toggle agent-history-toggle" : "history-toggle agent-history-toggle is-collapsed"}
+                onClick={() => setHistoryOpen((current) => !current)}
+                title={historyOpen ? "关闭历史占卜" : "打开历史占卜"}
+                type="button"
+              >
+                <span className="history-toggle-icon" aria-hidden="true">
+                  <span />
+                  <span />
+                </span>
+              </button>
             </div>
           </div>
         ) : null}
@@ -1104,10 +1117,6 @@ export function TarotVoiceApp() {
               {isThinking ? <Volume2 aria-hidden="true" size={19} /> : <Send aria-hidden="true" size={19} />}
             </button>
           </div>
-          {!chatOpen ? <div className="composer-scope">
-            <span aria-hidden="true">□</span>
-            <span>{t.workScope}</span>
-          </div> : null}
         </div>
 
         {chatOpen && messages.length <= 1 && !defaultPromptForMode(readingMode, t) ? (
