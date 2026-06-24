@@ -1,6 +1,6 @@
 "use client";
 
-import { Mic, RotateCcw, Send, Settings, Volume2, X } from "lucide-react";
+import { Mic, RotateCcw, Send, Settings, Sparkles, Volume2, X } from "lucide-react";
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import type {
@@ -612,7 +612,6 @@ export function TarotVoiceApp() {
   const [isThinking, setIsThinking] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(true);
-  const [mode, setMode] = useState<"live" | "mock">("mock");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [speechSupported, setSpeechSupported] = useState(false);
@@ -870,7 +869,6 @@ export function TarotVoiceApp() {
       const result = (await response.json()) as TarotTurnResponse;
       const assistantMessage = createMessage("assistant", result.reply, undefined, result.cards);
 
-      setMode(result.mode);
       startTransition(() => {
         setMessages((current) => [...current, assistantMessage].slice(-MAX_HISTORY));
       });
@@ -983,7 +981,6 @@ export function TarotVoiceApp() {
         <div className="chat-brand">
           <div>
             <h1>{t.title}</h1>
-            <span>{mode === "live" ? t.live : t.mock}</span>
           </div>
           <img className="brand-art" src="/brand/tarot-icon.webp" alt="" aria-hidden="true" />
           <button
@@ -999,15 +996,6 @@ export function TarotVoiceApp() {
             </span>
           </button>
         </div>
-        <button
-          aria-label={t.callSetup as string}
-          className="icon-button"
-          onClick={() => setSettingsOpen(true)}
-          title={t.callSetup as string}
-          type="button"
-        >
-          <Settings aria-hidden="true" size={20} />
-        </button>
       </header>
 
       <div className={historyOpen ? "app-workspace" : "app-workspace history-collapsed"}>
@@ -1035,6 +1023,16 @@ export function TarotVoiceApp() {
             <p>{t.emptyHistory}</p>
           )}
         </div>
+        <button
+          aria-label={t.callSetup as string}
+          className={settingsOpen ? "history-settings active" : "history-settings"}
+          onClick={() => setSettingsOpen((current) => !current)}
+          title={t.callSetup as string}
+          type="button"
+        >
+          <Settings aria-hidden="true" size={18} />
+          <span>{t.callSetup}</span>
+        </button>
       </aside> : null}
 
       <section className="chat-shell">
@@ -1047,23 +1045,7 @@ export function TarotVoiceApp() {
         {chatOpen ? (
           <div className="chat-agent-hero">
             <div className="agent-title-row">
-              <button aria-label="Back" className="agent-back" onClick={() => setChatOpen(false)} type="button">
-                ‹
-              </button>
-              <span className="agent-avatar" aria-hidden="true">✦</span>
               <h2>{selectedMode.label}</h2>
-              <button
-                aria-label={historyOpen ? "关闭历史占卜" : "打开历史占卜"}
-                className={historyOpen ? "history-toggle agent-history-toggle" : "history-toggle agent-history-toggle is-collapsed"}
-                onClick={() => setHistoryOpen((current) => !current)}
-                title={historyOpen ? "关闭历史占卜" : "打开历史占卜"}
-                type="button"
-              >
-                <span className="history-toggle-icon" aria-hidden="true">
-                  <span />
-                  <span />
-                </span>
-              </button>
             </div>
           </div>
         ) : null}
@@ -1174,7 +1156,9 @@ export function TarotVoiceApp() {
                   }}
                   type="button"
                 >
-                  <span className="reading-mode-avatar" aria-hidden="true">✦</span>
+                  <span className="reading-mode-avatar" aria-hidden="true">
+                    <Sparkles size={18} strokeWidth={1.7} />
+                  </span>
                   <span>
                     <strong>{item.label}</strong>
                     <span>{item.hint}</span>
@@ -1200,32 +1184,6 @@ export function TarotVoiceApp() {
                 <X aria-hidden="true" size={20} />
               </button>
             </div>
-
-          <div className="control-group">
-            <label>{t.spread}</label>
-            <div className="toggle-row">
-              <button
-                className={spreadType === "three-card" ? "toggle-button active" : "toggle-button"}
-                onClick={() => {
-                  setReadingMode("classic");
-                  setSpreadType("three-card");
-                }}
-                type="button"
-              >
-                {t.threeCards}
-              </button>
-              <button
-                className={spreadType === "single-card" ? "toggle-button active" : "toggle-button"}
-                onClick={() => {
-                  setReadingMode("classic");
-                  setSpreadType("single-card");
-                }}
-                type="button"
-              >
-                {t.singleCard}
-              </button>
-            </div>
-          </div>
 
           <div className="control-group">
             <label>{t.readerTone}</label>

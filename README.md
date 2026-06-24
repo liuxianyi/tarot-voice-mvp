@@ -13,7 +13,10 @@ That choice is deliberate. OpenAI's voice-agent guidance says chained voice pipe
 
 ## What ships in this repo
 
-- A polished single-page web UI
+- A polished single-page web UI with a tarot-room visual theme
+- A voice-first home flow with reading-type shortcuts
+- A persistent history sidebar with new-reading and settings controls
+- A left-bottom settings popover for tone, language, and speech output
 - Browser audio recording through `MediaRecorder`, transcribed locally with MLX Whisper
 - `/api/tarot/turn` for the tarot brain
 - Server-side tarot drawing via a function tool
@@ -164,6 +167,10 @@ Keep the tarot logic exactly as-is and only swap the audio layer.
 
 - If the user question is too vague, Luna asks one clarifying question instead of drawing immediately.
 - If the question is specific enough, the model calls the `draw_tarot_spread` tool and then interprets the cards.
+- The default product path is a three-card reading, while specialized modes can request single-card or teaching-style turns.
+- The interface keeps the tarot experience primary: the first screen is the usable reading surface, not a marketing landing page.
+- Current styling uses a dark charcoal tarot-room palette with a restrained copper-gold accent.
+- The history sidebar supports tactile hover and active states for new readings, history items, and settings.
 - Tarot is framed as reflection and guidance, not certainty.
 
 ## Production next steps
