@@ -360,17 +360,11 @@ const tarotCardArtwork: Record<string, string> = {
 
 function getTarotCardArtwork(card: DrawnCard) {
   const baseId = card.id.replace(/-(upright|reversed)-.+$/, "");
-  return tarotCardArtwork[baseId] || `/tarot-cards/${baseId}.png`;
-}
-
-function getTarotCardFallbackArtwork(card: DrawnCard) {
-  const baseId = card.id.replace(/-(upright|reversed)-.+$/, "");
-  return `/tarot-cards/${baseId}.svg`;
+  return `${tarotCardArtwork[baseId] || `/tarot-cards/${baseId}.png`}?v=ai-png-deck-20260624`;
 }
 
 function TarotCardImage({ card, index, language }: { card: DrawnCard; index: number; language: LanguageStyle }) {
   const artwork = getTarotCardArtwork(card);
-  const fallbackArtwork = getTarotCardFallbackArtwork(card);
   const palette = cardPalette(card);
   const seed = hashText(card.id);
   const symbol = card.arcana === "major" ? "✦" : card.suit === "Cups" ? "☽" : card.suit === "Swords" ? "◇" : card.suit === "Pentacles" ? "◎" : "△";
@@ -389,13 +383,6 @@ function TarotCardImage({ card, index, language }: { card: DrawnCard; index: num
           <img
             alt={`${card.name} · ${displayOrientation(card.orientation, language)}`}
             className="tarot-card-artwork"
-            onError={(event) => {
-              if (event.currentTarget.src.endsWith(fallbackArtwork)) {
-                return;
-              }
-
-              event.currentTarget.src = fallbackArtwork;
-            }}
             src={artwork}
           />
         ) : (
