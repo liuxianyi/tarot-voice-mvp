@@ -28,11 +28,31 @@ const uiText = {
     classicMode: "三张牌",
     yesNoMode: "是或否",
     dailyMode: "每日指引",
+    relationshipMode: "情感牌阵",
+    forecastMode: "周期运势",
+    learningMode: "牌阵教学",
+    privateMode: "私占咨询",
+    messageMode: "宇宙传讯",
+    aiMode: "AI 塔罗",
     classicHint: "说出具体情况，Luna 默认抽三张牌。",
     yesNoHint: "问一个能回答倾向的问题，Luna 抽一张牌。",
     dailyHint: "不用输入问题，抽今天的一张指引。",
+    relationshipHint: "围绕关系状态、对方想法、下一步。",
+    forecastHint: "看本周、本月或某阶段的节奏。",
+    learningHint: "解释适合这个问题的牌阵和问法。",
+    privateHint: "像私占一样先承接背景，再抽牌。",
+    messageHint: "偏情绪陪伴和当下提醒。",
+    aiHint: "用更结构化的方式拆解问题。",
     dailyQuestion: "请为我抽一张今天的塔罗指引牌，看看我今天最需要留意什么，以及可以采取的一个行动。",
+    forecastQuestion: "请为我做一个本周塔罗运势，看看整体主题、需要留意的挑战，以及一个行动建议。",
+    learningQuestion: "请教我这个问题适合用什么塔罗牌阵，并给我一个简单可执行的问法。",
+    messageQuestion: "请给我一则当下的塔罗传讯，看看现在有什么正在靠近我，以及我需要如何安顿自己。",
+    aiQuestion: "请用 AI 塔罗的方式帮我结构化分析当前问题，先拆解关键变量，再抽牌给出反思建议。",
     dailyButton: "抽今日指引",
+    forecastButton: "看本周",
+    learningButton: "学牌阵",
+    messageButton: "收传讯",
+    aiButton: "AI 分析",
     eyebrow: "Luna 会先抽牌，再解读",
     title: "Luna 语音塔罗",
     spread: "牌阵",
@@ -104,11 +124,31 @@ const uiText = {
     classicMode: "Three cards",
     yesNoMode: "Yes or No",
     dailyMode: "Daily guide",
+    relationshipMode: "Relationship",
+    forecastMode: "Forecast",
+    learningMode: "Spread lesson",
+    privateMode: "Private reading",
+    messageMode: "Intuitive message",
+    aiMode: "AI tarot",
     classicHint: "Describe a specific situation. Luna draws three cards by default.",
     yesNoHint: "Ask one question with a clear leaning. Luna draws one card.",
     dailyHint: "No typing needed. Draw one card for today.",
+    relationshipHint: "Focus on the bond, their stance, and the next move.",
+    forecastHint: "Read the rhythm of this week, month, or phase.",
+    learningHint: "Learn which spread fits your question.",
+    privateHint: "Give context for a more consultative reading.",
+    messageHint: "A softer message for what is moving toward you.",
+    aiHint: "Structure the situation before drawing cards.",
     dailyQuestion: "Please draw one tarot card as my guidance for today. Show what I most need to notice today and one action I can take.",
+    forecastQuestion: "Please give me a tarot forecast for this week: the overall theme, the challenge to watch, and one action I can take.",
+    learningQuestion: "Teach me which tarot spread fits this question and give me a simple, practical wording I can use.",
+    messageQuestion: "Please give me an intuitive tarot message for this moment: what may be moving toward me and how I can steady myself.",
+    aiQuestion: "Use an AI tarot style to structure my current issue first, then draw cards and give reflective advice.",
     dailyButton: "Draw today",
+    forecastButton: "This week",
+    learningButton: "Teach me",
+    messageButton: "Receive",
+    aiButton: "Analyze",
     eyebrow: "Luna reads after the cards are drawn",
     title: "Luna Voice Tarot",
     spread: "Spread",
@@ -191,7 +231,52 @@ function createMessage(role: "user" | "assistant", content: string, source?: Mes
 }
 
 function spreadForMode(mode: ReadingMode, fallback: SpreadType): SpreadType {
-  return mode === "classic" ? fallback : "single-card";
+  if (mode === "yes-no" || mode === "daily" || mode === "message" || mode === "learning") {
+    return "single-card";
+  }
+
+  return mode === "classic" ? fallback : "three-card";
+}
+
+function defaultPromptForMode(mode: ReadingMode, text: Record<string, string | string[]>) {
+  if (mode === "daily") return text.dailyQuestion as string;
+  if (mode === "forecast") return text.forecastQuestion as string;
+  if (mode === "learning") return text.learningQuestion as string;
+  if (mode === "message") return text.messageQuestion as string;
+  if (mode === "ai") return text.aiQuestion as string;
+  return "";
+}
+
+function instructionForMode(mode: ReadingMode, language: LanguageStyle) {
+  const zh = {
+    classic: "模式：经典三张牌。围绕用户的具体处境抽牌，优先使用过去、现在、近期走向的结构。",
+    "yes-no": "模式：是或否。用户需要一个倾向性回答。抽单张牌，给出偏是、偏否或暂不清晰的反思性倾向，不要做确定预言。",
+    daily: "模式：每日指引。抽单张牌，聚焦今天最需要留意的主题和一个可执行行动。",
+    relationship: "模式：情感牌阵。抽三张牌，聚焦关系现状、对方或互动中的隐藏信号、用户下一步建议。",
+    forecast: "模式：周期运势。抽三张牌，聚焦整体主题、挑战、行动建议。避免绝对预测。",
+    learning: "模式：牌阵教学。优先教学，不要神秘化。可抽单张牌作为示例，并说明适合的牌阵、提问方式和使用边界。",
+    private: "模式：私占咨询。像一对一咨询一样承接背景。如果信息足够具体，抽三张牌并给出细致但简洁的解读；如果太空泛，只问一个澄清问题。",
+    message: "模式：宇宙传讯。抽单张牌，语气更安抚，聚焦当下情绪、正在靠近的主题和自我安顿。不要宣称超自然确定性。",
+    ai: "模式：AI 塔罗。先结构化拆解用户问题的关键变量，再抽三张牌做反思性建议。保持温暖，不要显得机械。"
+  } satisfies Record<ReadingMode, string>;
+  const en = {
+    classic: "Mode: classic three-card reading. Use the user's specific situation and prefer a past, present, near-future structure.",
+    "yes-no": "Mode: yes-or-no. The user wants a leaning. Draw one card and answer as leaning yes, leaning no, or not clear yet. Do not claim certainty.",
+    daily: "Mode: daily guidance. Draw one card for what to notice today and one practical action.",
+    relationship: "Mode: relationship spread. Draw three cards for the current bond, hidden signal in the interaction, and the user's next step.",
+    forecast: "Mode: period forecast. Draw three cards for overall theme, challenge, and action. Avoid absolute prediction.",
+    learning: "Mode: spread lesson. Prioritize teaching. You may draw one example card and explain the fitting spread, wording, and boundaries.",
+    private: "Mode: private consultation. Hold the user's context like a one-on-one reading. Draw three cards if specific enough, otherwise ask one clarifier.",
+    message: "Mode: intuitive message. Draw one card with a soothing tone, focused on the present emotional theme and self-grounding. Do not claim supernatural certainty.",
+    ai: "Mode: AI tarot. First structure the key variables in the user's issue, then draw three cards for reflective advice. Stay warm, not mechanical."
+  } satisfies Record<ReadingMode, string>;
+
+  return language === "zh" ? zh[mode] : en[mode];
+}
+
+function requestTextForMode(userText: string, mode: ReadingMode, language: LanguageStyle) {
+  const label = language === "zh" ? "用户问题" : "User question";
+  return `${instructionForMode(mode, language)}\n\n${label}: ${userText}`;
 }
 
 function formatTime(iso: string) {
@@ -490,8 +575,19 @@ export function TarotVoiceApp() {
   const listRef = useRef<HTMLDivElement | null>(null);
   const t = uiText[language];
   const quickPrompts = t.quickPrompts as string[];
-  const selectedModeHint =
-    readingMode === "yes-no" ? (t.yesNoHint as string) : readingMode === "daily" ? (t.dailyHint as string) : (t.classicHint as string);
+  const readingModes = [
+    { mode: "classic", label: t.classicMode, hint: t.classicHint },
+    { mode: "yes-no", label: t.yesNoMode, hint: t.yesNoHint },
+    { mode: "daily", label: t.dailyMode, hint: t.dailyButton },
+    { mode: "relationship", label: t.relationshipMode, hint: t.relationshipHint },
+    { mode: "forecast", label: t.forecastMode, hint: t.forecastButton },
+    { mode: "learning", label: t.learningMode, hint: t.learningButton },
+    { mode: "private", label: t.privateMode, hint: t.privateHint },
+    { mode: "message", label: t.messageMode, hint: t.messageButton },
+    { mode: "ai", label: t.aiMode, hint: t.aiButton }
+  ] satisfies Array<{ mode: ReadingMode; label: string | string[]; hint: string | string[] }>;
+  const selectedMode = readingModes.find((item) => item.mode === readingMode) || readingModes[0];
+  const selectedModeHint = selectedMode.hint as string;
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -648,7 +744,7 @@ export function TarotVoiceApp() {
         },
         body: JSON.stringify({
           history: messagesRef.current,
-          userMessage: text,
+          userMessage: requestTextForMode(text, requestedMode, language),
           spreadType: spreadForMode(requestedMode, spreadType),
           tone,
           language,
@@ -752,12 +848,7 @@ export function TarotVoiceApp() {
 
   function changeReadingMode(nextMode: ReadingMode) {
     setReadingMode(nextMode);
-
-    if (nextMode === "classic") {
-      setSpreadType("three-card");
-    } else {
-      setSpreadType("single-card");
-    }
+    setSpreadType(spreadForMode(nextMode, "three-card"));
   }
 
   return (
@@ -807,37 +898,31 @@ export function TarotVoiceApp() {
         </div>
 
         <div className="reading-modes" aria-label={t.readingModesLabel as string}>
-          <button
-            className={readingMode === "classic" ? "reading-mode active" : "reading-mode"}
-            onClick={() => changeReadingMode("classic")}
-            type="button"
-          >
-            <strong>{t.classicMode}</strong>
-            <span>{t.classicHint}</span>
-          </button>
-          <button
-            className={readingMode === "yes-no" ? "reading-mode active" : "reading-mode"}
-            onClick={() => changeReadingMode("yes-no")}
-            type="button"
-          >
-            <strong>{t.yesNoMode}</strong>
-            <span>{t.yesNoHint}</span>
-          </button>
-          <button
-            className={readingMode === "daily" ? "reading-mode active" : "reading-mode"}
-            disabled={isThinking}
-            onClick={() => {
-              changeReadingMode("daily");
-              void submitTurn(t.dailyQuestion as string, "text", "daily");
-            }}
-            type="button"
-          >
-            <strong>{t.dailyMode}</strong>
-            <span>{t.dailyButton}</span>
-          </button>
+          {readingModes.map((item) => {
+            const defaultPrompt = defaultPromptForMode(item.mode, t);
+            const canAutoSubmit = Boolean(defaultPrompt);
+
+            return (
+              <button
+                className={readingMode === item.mode ? "reading-mode active" : "reading-mode"}
+                disabled={isThinking}
+                key={item.mode}
+                onClick={() => {
+                  changeReadingMode(item.mode);
+                  if (canAutoSubmit) {
+                    void submitTurn(defaultPrompt, "text", item.mode);
+                  }
+                }}
+                type="button"
+              >
+                <strong>{item.label}</strong>
+                <span>{item.hint}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {messages.length <= 1 && readingMode !== "daily" ? (
+        {messages.length <= 1 && !defaultPromptForMode(readingMode, t) ? (
           <div className="starter-prompts" aria-label={t.quickPromptsLabel as string}>
             {quickPrompts.slice(0, 3).map((prompt) => (
               <button key={prompt} onClick={() => setDraft(prompt)} type="button">{prompt}</button>
@@ -861,7 +946,7 @@ export function TarotVoiceApp() {
                 }
               }
             }}
-            placeholder={readingMode === "daily" ? (t.dailyQuestion as string) : (t.questionPlaceholder as string)}
+            placeholder={defaultPromptForMode(readingMode, t) || (t.questionPlaceholder as string)}
             rows={2}
             value={draft}
           />
@@ -880,9 +965,9 @@ export function TarotVoiceApp() {
             <button
               aria-label={t.send as string}
               className="send-button"
-              disabled={(!draft.trim() && readingMode !== "daily") || isThinking}
+              disabled={(!draft.trim() && !defaultPromptForMode(readingMode, t)) || isThinking}
               onClick={() => {
-                const text = readingMode === "daily" && !draft.trim() ? (t.dailyQuestion as string) : draft;
+                const text = !draft.trim() ? defaultPromptForMode(readingMode, t) : draft;
                 void submitTurn(text, "text", readingMode);
                 setDraft("");
               }}
