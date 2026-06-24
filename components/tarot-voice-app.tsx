@@ -16,6 +16,7 @@ import type {
 } from "@/lib/types";
 
 const STORAGE_KEY = "tarot-voice-mvp-history";
+const SESSIONS_STORAGE_KEY = "tarot-voice-mvp-sessions";
 const LANGUAGE_STORAGE_KEY = "tarot-voice-mvp-language";
 const MAX_HISTORY = 18;
 
@@ -25,10 +26,13 @@ const uiText = {
       "我是 Luna。你可以告诉我一段关系、一次职业选择、金钱压力，或任何正在消化的心结。如果问题已经足够清楚，我会先抽牌，再解读；如果还太模糊，我只会先问一个简短的澄清问题。",
     quickPrompts: ["我刚失恋，想看看这段关系给我的提醒。", "我最近在考虑离职，想知道自己没看见什么。", "我和对方的关系很暧昧，我该继续吗？", "我对钱和未来很焦虑，下一步该怎么走？"],
     readingModesLabel: "占卜形式",
-    homeGreeting: "Hi，今天想问什么？",
+    homeGreeting: "让牌面照见此刻的答案",
     modeStripLabel: "当前占卜形式",
     modeCatalogTitle: "选择一种占卜形式开始",
     workScope: "在 Luna 塔罗中工作",
+    historyTitle: "历史占卜",
+    emptyHistory: "暂无历史记录",
+    newReading: "新的占卜",
     classicMode: "三张牌",
     yesNoMode: "是或否",
     dailyMode: "每日指引",
@@ -125,10 +129,13 @@ const uiText = {
       "What is the next clean step for my side project?"
     ],
     readingModesLabel: "Reading type",
-    homeGreeting: "Hi, what would you like to ask today?",
+    homeGreeting: "Let the cards reflect this moment",
     modeStripLabel: "Current reading type",
     modeCatalogTitle: "Choose a reading type to begin",
     workScope: "Working in Luna Tarot",
+    historyTitle: "Reading history",
+    emptyHistory: "No readings yet",
+    newReading: "New reading",
     classicMode: "Three cards",
     yesNoMode: "Yes or No",
     dailyMode: "Daily guide",
@@ -217,6 +224,13 @@ const uiText = {
   }
 } satisfies Record<LanguageStyle, Record<string, string | string[]>>;
 
+interface TarotSession {
+  id: string;
+  title: string;
+  messages: TarotChatMessage[];
+  updatedAt: string;
+}
+
 function createIntroMessage(language: LanguageStyle): TarotChatMessage {
   return {
     id: "intro",
@@ -225,6 +239,31 @@ function createIntroMessage(language: LanguageStyle): TarotChatMessage {
     createdAt: new Date().toISOString(),
     cards: null
   };
+}
+
+function createSessionId() {
+  return `session-${crypto.randomUUID()}`;
+}
+
+function createEmptySession(language: LanguageStyle): TarotSession {
+  const intro = createIntroMessage(language);
+
+  return {
+    id: createSessionId(),
+    title: uiText[language].newReading as string,
+    messages: [intro],
+    updatedAt: intro.createdAt
+  };
+}
+
+function titleForMessages(messages: TarotChatMessage[], fallback: string) {
+  const firstUserMessage = messages.find((message) => message.role === "user")?.content.trim();
+
+  if (!firstUserMessage) {
+    return fallback;
+  }
+
+  return firstUserMessage.length > 28 ? `${firstUserMessage.slice(0, 28)}...` : firstUserMessage;
 }
 
 function createMessage(role: "user" | "assistant", content: string, source?: MessageSource, cards?: DrawnSpread | null) {
@@ -559,7 +598,11 @@ function EmptySpread() {
 
 export function TarotVoiceApp() {
   const [language, setLanguage] = useState<LanguageStyle>("zh");
-  const [messages, setMessages] = useState<TarotChatMessage[]>([createIntroMessage("zh")]);
+  const initialSession = useMemo(() => createEmptySession("zh"), []);
+  const [sessions, setSessions] = useState<TarotSession[]>([initialSession]);
+  const [currentSessionId, setCurrentSessionId] = useState(initialSession.id);
+  const [messages, setMessages] = useState<TarotChatMessage[]>(initialSession.messages);
+  const [sessionsLoaded, setSessionsLoaded] = useState(false);
   const [draft, setDraft] = useState("");
   const [readingMode, setReadingMode] = useState<ReadingMode>("classic");
   const [spreadType, setSpreadType] = useState<SpreadType>("three-card");
@@ -584,6 +627,7 @@ export function TarotVoiceApp() {
   const listRef = useRef<HTMLDivElement | null>(null);
   const t = uiText[language];
   const quickPrompts = t.quickPrompts as string[];
+  const visibleSessions = sessions.filter((session) => session.messages.some((message) => message.id !== "intro"));
   const readingModes = [
     { mode: "classic", label: t.classicMode, hint: t.classicHint },
     { mode: "yes-no", label: t.yesNoMode, hint: t.yesNoHint },
@@ -597,6 +641,7 @@ export function TarotVoiceApp() {
   ] satisfies Array<{ mode: ReadingMode; label: string | string[]; hint: string | string[] }>;
   const selectedMode = readingModes.find((item) => item.mode === readingMode) || readingModes[0];
   const selectedModeHint = selectedMode.hint as string;
+  const currentSessionHasConversation = messages.some((message) => message.id !== "intro");
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -632,21 +677,49 @@ export function TarotVoiceApp() {
       return;
     }
 
+    const storedSessions = window.localStorage.getItem(SESSIONS_STORAGE_KEY);
+
+    if (storedSessions) {
+      try {
+        const parsed = JSON.parse(storedSessions) as TarotSession[];
+
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSessions(parsed);
+          setCurrentSessionId(parsed[0].id);
+          setMessages(parsed[0].messages);
+          setSessionsLoaded(true);
+          return;
+        }
+      } catch {
+        window.localStorage.removeItem(SESSIONS_STORAGE_KEY);
+      }
+    }
+
     const stored = window.localStorage.getItem(STORAGE_KEY);
 
-    if (!stored) {
-      return;
-    }
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as TarotChatMessage[];
 
-    try {
-      const parsed = JSON.parse(stored) as TarotChatMessage[];
-
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        setMessages(parsed);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const migratedSession = {
+            id: createSessionId(),
+            title: titleForMessages(parsed, uiText[language].newReading as string),
+            messages: parsed,
+            updatedAt: parsed.at(-1)?.createdAt || new Date().toISOString()
+          };
+          setSessions([migratedSession]);
+          setCurrentSessionId(migratedSession.id);
+          setMessages(parsed);
+          setSessionsLoaded(true);
+          return;
+        }
+      } catch {
+        window.localStorage.removeItem(STORAGE_KEY);
       }
-    } catch {
-      window.localStorage.removeItem(STORAGE_KEY);
     }
+
+    setSessionsLoaded(true);
   }, []);
 
   useEffect(() => {
@@ -654,8 +727,36 @@ export function TarotVoiceApp() {
       return;
     }
 
+    if (!sessionsLoaded) {
+      return;
+    }
+
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-  }, [messages]);
+    setSessions((current) => {
+      const fallbackTitle = uiText[language].newReading as string;
+      const updatedSession = {
+        id: currentSessionId,
+        title: titleForMessages(messages, fallbackTitle),
+        messages,
+        updatedAt: messages.at(-1)?.createdAt || new Date().toISOString()
+      };
+      const withoutCurrent = current.filter((session) => session.id !== currentSessionId);
+
+      return [updatedSession, ...withoutCurrent];
+    });
+  }, [currentSessionId, language, messages, sessionsLoaded]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (!sessionsLoaded) {
+      return;
+    }
+
+    window.localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(sessions));
+  }, [sessions, sessionsLoaded]);
 
   useEffect(() => {
     listRef.current?.scrollTo({
@@ -792,11 +893,26 @@ export function TarotVoiceApp() {
     if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
+    const nextSession = createEmptySession(language);
     setDraft("");
     setError(null);
     setChatOpen(false);
-    setMessages([createIntroMessage(language)]);
-    window.localStorage.removeItem(STORAGE_KEY);
+    setCurrentSessionId(nextSession.id);
+    setMessages(nextSession.messages);
+    setSessions((current) => [nextSession, ...current]);
+  }
+
+  function openSession(session: TarotSession) {
+    recorderRef.current?.stop();
+    audioRef.current?.pause();
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    setError(null);
+    setDraft("");
+    setCurrentSessionId(session.id);
+    setMessages(session.messages);
+    setChatOpen(true);
   }
 
   async function startListening() {
@@ -883,24 +999,35 @@ export function TarotVoiceApp() {
         </button>
       </header>
 
+      <div className="app-workspace">
+      <aside className="history-sidebar" aria-label={t.historyTitle as string}>
+        <div className="history-header">
+          <strong>{t.historyTitle}</strong>
+          <button className="history-new" onClick={handleReset} type="button">{t.newReading}</button>
+        </div>
+        <div className="history-list">
+          {visibleSessions.length ? (
+            visibleSessions.map((session) => (
+              <button
+                className={session.id === currentSessionId ? "history-item active" : "history-item"}
+                key={session.id}
+                onClick={() => openSession(session)}
+                type="button"
+              >
+                <strong>{session.title}</strong>
+                <span>{hydrated ? formatTime(session.updatedAt) : "--:--"}</span>
+              </button>
+            ))
+          ) : (
+            <p>{t.emptyHistory}</p>
+          )}
+        </div>
+      </aside>
+
       <section className="chat-shell">
         {!chatOpen ? (
         <div className="home-hero">
           <h2>{t.homeGreeting}</h2>
-          <button className="mode-strip" aria-label={t.modeStripLabel as string} onClick={() => setChatOpen(true)} type="button">
-            <span className="mode-strip-brand">
-              <span className="brand-dot" aria-hidden="true">✦</span>
-              {selectedMode.label}
-            </span>
-            <span aria-hidden="true">|</span>
-            <span aria-hidden="true">☉</span>
-            <span aria-hidden="true">|</span>
-            <span aria-hidden="true">☽</span>
-            <span aria-hidden="true">|</span>
-            <span aria-hidden="true">✧</span>
-            <span aria-hidden="true">|</span>
-            <span aria-hidden="true">＋</span>
-          </button>
         </div>
         ) : null}
 
@@ -1040,6 +1167,7 @@ export function TarotVoiceApp() {
         </div>
         ) : null}
       </section>
+      </div>
 
       {settingsOpen ? (
         <div className="settings-layer" role="presentation" onMouseDown={() => setSettingsOpen(false)}>
