@@ -1039,11 +1039,7 @@ export function TarotVoiceApp() {
               </button>
               <span className="agent-avatar" aria-hidden="true">✦</span>
               <h2>{selectedMode.label}</h2>
-              <button aria-label={t.callSetup as string} className="agent-edit" onClick={() => setSettingsOpen(true)} type="button">
-                ✎
-              </button>
             </div>
-            <p className="agent-description">{instructionForMode(readingMode, language).replace(/^模式：|^Mode: /, "")}</p>
           </div>
         ) : null}
 
@@ -1067,18 +1063,20 @@ export function TarotVoiceApp() {
             rows={2}
             value={draft}
           />
-          <p className="composer-hint">{selectedModeHint}</p>
+          {!chatOpen ? <p className="composer-hint">{selectedModeHint}</p> : null}
           <div className="composer-toolbar">
-            <button
-              aria-label={t.speak as string}
-              className={isListening ? "composer-icon pulse" : "composer-icon"}
-              disabled={!speechSupported || isTranscribing}
-              onClick={() => void startListening()}
-              title={isTranscribing ? t.transcribing as string : t.speak as string}
-              type="button"
-            >
-              <Mic aria-hidden="true" size={19} />
-            </button>
+            {!chatOpen ? (
+              <button
+                aria-label={t.speak as string}
+                className={isListening ? "composer-icon pulse" : "composer-icon"}
+                disabled={!speechSupported || isTranscribing}
+                onClick={() => void startListening()}
+                title={isTranscribing ? t.transcribing as string : t.speak as string}
+                type="button"
+              >
+                <Mic aria-hidden="true" size={19} />
+              </button>
+            ) : <span />}
             <button
               aria-label={t.send as string}
               className="send-button"
@@ -1094,10 +1092,10 @@ export function TarotVoiceApp() {
               {isThinking ? <Volume2 aria-hidden="true" size={19} /> : <Send aria-hidden="true" size={19} />}
             </button>
           </div>
-          <div className="composer-scope">
+          {!chatOpen ? <div className="composer-scope">
             <span aria-hidden="true">□</span>
             <span>{t.workScope}</span>
-          </div>
+          </div> : null}
         </div>
 
         {chatOpen && messages.length <= 1 && !defaultPromptForMode(readingMode, t) ? (
@@ -1108,9 +1106,9 @@ export function TarotVoiceApp() {
           </div>
         ) : null}
 
-        {chatOpen && messages.some((message) => message.id !== "intro") ? (
+        {chatOpen ? (
           <div className="conversation-list" ref={listRef}>
-            {messages.map((message) => (
+            {currentSessionHasConversation ? messages.map((message) => (
               <article className={message.role === "assistant" ? "message assistant" : "message user"} key={message.id}>
                 <div className="message-meta">
                   <span>{message.role === "assistant" ? t.assistantName : t.userName}</span>
@@ -1120,7 +1118,7 @@ export function TarotVoiceApp() {
                 <MarkdownMessage content={message.content} />
                 {message.source ? <span className="message-source">{message.source === "voice" ? t.sourceVoice : t.sourceText}</span> : null}
               </article>
-            ))}
+            )) : null}
 
             {isThinking ? (
               <article className="message assistant loading">
