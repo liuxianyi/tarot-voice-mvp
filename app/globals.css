@@ -1199,7 +1199,14 @@ code {
 .chat-brand {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 8px;
+}
+
+.brand-lockup {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
 }
 
 .history-toggle {
@@ -1268,12 +1275,15 @@ code {
 }
 
 .brand-art {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   display: block;
-  border-radius: 12px;
+  border: 1px solid rgba(232, 184, 110, 0.28);
+  border-radius: 10px;
   object-fit: cover;
-  box-shadow: 0 8px 18px rgba(25, 29, 36, 0.1);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 8px 18px rgba(25, 29, 36, 0.12);
 }
 
 .chat-brand h1 {
@@ -1971,7 +1981,17 @@ code {
 }
 
 .chat-brand {
-  gap: 13px;
+  gap: 8px;
+}
+
+.brand-lockup {
+  border: 1px solid rgba(232, 184, 110, 0.16);
+  border-radius: 12px;
+  background: rgba(35, 28, 24, 0.52);
+  padding: 4px 10px 4px 5px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 10px 24px rgba(6, 5, 4, 0.18);
 }
 
 .chat-brand h1,
@@ -1982,6 +2002,8 @@ code {
 }
 
 .brand-art {
+  width: 34px;
+  height: 34px;
   border: 1px solid rgba(232, 184, 110, 0.26);
   border-radius: 10px;
   background: rgba(35, 28, 24, 0.78);
@@ -2572,15 +2594,28 @@ code {
   }
 
   .app-workspace {
-    grid-template-columns: clamp(88px, 28vw, 150px) minmax(0, 1fr);
+    position: relative;
+    grid-template-columns: minmax(0, 1fr);
     overflow: hidden;
   }
 
   .history-sidebar {
+    position: fixed;
+    top: 66px;
+    bottom: 12px;
+    left: 10px;
+    z-index: 30;
+    width: min(82vw, 320px);
     min-height: 0;
-    border-right: 1px solid rgba(28, 32, 38, 0.1);
-    border-bottom: 0;
-    padding: 10px 8px;
+    border: 1px solid rgba(231, 188, 122, 0.18);
+    border-radius: 14px;
+    padding: 12px 10px;
+    background: rgba(20, 18, 17, 0.94);
+    box-shadow:
+      0 22px 54px rgba(0, 0, 0, 0.42),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(18px);
+    animation: mobile-history-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .history-settings {
@@ -2622,8 +2657,25 @@ code {
     padding: 0 12px;
   }
 
+  .brand-lockup {
+    gap: 7px;
+    padding: 3px 8px 3px 4px;
+  }
+
+  .brand-art {
+    width: 31px;
+    height: 31px;
+    border-radius: 9px;
+  }
+
   .chat-brand h1 {
     font-size: 17px;
+  }
+
+  .history-toggle {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
   }
 
   .chat-shell {
@@ -2699,5 +2751,16 @@ code {
     bottom: 112px;
     width: auto;
     max-width: none;
+  }
+}
+
+@keyframes mobile-history-in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
   }
 }

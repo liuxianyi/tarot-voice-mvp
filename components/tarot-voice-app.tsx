@@ -642,7 +642,7 @@ export function TarotVoiceApp() {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(true);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [speechSupported, setSpeechSupported] = useState(false);
@@ -1010,14 +1010,19 @@ export function TarotVoiceApp() {
     <main className={chatOpen ? "chat-page is-chat" : "chat-page is-home"}>
       <header className="chat-header">
         <div className="chat-brand">
-          <div>
-            <h1>{t.title}</h1>
+          <div className="brand-lockup">
+            <img className="brand-art" src="/brand/tarot-icon.webp" alt="" aria-hidden="true" />
+            <div>
+              <h1>{t.title}</h1>
+            </div>
           </div>
-          <img className="brand-art" src="/brand/tarot-icon.webp" alt="" aria-hidden="true" />
           <button
             aria-label={historyOpen ? "关闭历史占卜" : "打开历史占卜"}
             className={historyOpen ? "history-toggle" : "history-toggle is-collapsed"}
-            onClick={() => setHistoryOpen((current) => !current)}
+            onClick={() => {
+              setHistoryOpen((current) => !current);
+              setSettingsOpen(false);
+            }}
             title={historyOpen ? "关闭历史占卜" : "打开历史占卜"}
             type="button"
           >
