@@ -654,6 +654,7 @@ export function TarotVoiceApp() {
   const audioChunksRef = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
+  const historyPointerStartRef = useRef<{ x: number; y: number } | null>(null);
   const t = uiText[language];
   const quickPrompts = t.quickPrompts as string[];
   const visibleSessions = sessions.filter((session) => session.messages.some((message) => message.id !== "intro"));
@@ -713,9 +714,10 @@ export function TarotVoiceApp() {
         const parsed = JSON.parse(storedSessions) as TarotSession[];
 
         if (Array.isArray(parsed) && parsed.length > 0) {
+          const nextSession = createEmptySession(language);
           setSessions(parsed);
-          setCurrentSessionId(parsed[0].id);
-          setMessages(parsed[0].messages);
+          setCurrentSessionId(nextSession.id);
+          setMessages(nextSession.messages);
           setSessionsLoaded(true);
           return;
         }
@@ -731,6 +733,7 @@ export function TarotVoiceApp() {
         const parsed = JSON.parse(stored) as TarotChatMessage[];
 
         if (Array.isArray(parsed) && parsed.length > 0) {
+          const nextSession = createEmptySession(language);
           const migratedSession = {
             id: createSessionId(),
             title: titleForMessages(parsed, uiText[language].newReading as string),
@@ -738,8 +741,8 @@ export function TarotVoiceApp() {
             updatedAt: parsed.at(-1)?.createdAt || new Date().toISOString()
           };
           setSessions([migratedSession]);
-          setCurrentSessionId(migratedSession.id);
-          setMessages(parsed);
+          setCurrentSessionId(nextSession.id);
+          setMessages(nextSession.messages);
           setSessionsLoaded(true);
           return;
         }
@@ -757,6 +760,14 @@ export function TarotVoiceApp() {
     }
 
     if (!sessionsLoaded) {
+      return;
+    }
+
+    const hasConversation = messages.some((message) => message.id !== "intro");
+
+    if (!hasConversation) {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+      setSessions((current) => current.filter((session) => session.id !== currentSessionId));
       return;
     }
 
@@ -925,9 +936,9 @@ export function TarotVoiceApp() {
     setDraft("");
     setError(null);
     setChatOpen(false);
+    setHistoryOpen(false);
     setCurrentSessionId(nextSession.id);
     setMessages(nextSession.messages);
-    setSessions((current) => [nextSession, ...current]);
   }
 
   function openSession(session: TarotSession) {
@@ -941,6 +952,27 @@ export function TarotVoiceApp() {
     setCurrentSessionId(session.id);
     setMessages(session.messages);
     setChatOpen(true);
+    setHistoryOpen(false);
+  }
+
+  function handleHistoryPointerDown(clientX: number, clientY: number) {
+    historyPointerStartRef.current = { x: clientX, y: clientY };
+  }
+
+  function handleHistoryPointerUp(clientX: number, clientY: number) {
+    const start = historyPointerStartRef.current;
+    historyPointerStartRef.current = null;
+
+    if (!start) {
+      return;
+    }
+
+    const deltaX = clientX - start.x;
+    const deltaY = clientY - start.y;
+
+    if (deltaX < -48 && Math.abs(deltaY) < 42) {
+      setHistoryOpen(false);
+    }
   }
 
   async function startListening() {
@@ -1035,7 +1067,21 @@ export function TarotVoiceApp() {
       </header>
 
       <div className={historyOpen ? "app-workspace" : "app-workspace history-collapsed"}>
-      {historyOpen ? <aside className="history-sidebar" aria-label={t.historyTitle as string}>
+      {historyOpen ? (
+        <div
+          aria-hidden="true"
+          className="history-scrim"
+          onClick={() => setHistoryOpen(false)}
+          onPointerDown={(event) => handleHistoryPointerDown(event.clientX, event.clientY)}
+          onPointerUp={(event) => handleHistoryPointerUp(event.clientX, event.clientY)}
+        />
+      ) : null}
+      {historyOpen ? <aside
+        className="history-sidebar"
+        aria-label={t.historyTitle as string}
+        onPointerDown={(event) => handleHistoryPointerDown(event.clientX, event.clientY)}
+        onPointerUp={(event) => handleHistoryPointerUp(event.clientX, event.clientY)}
+      >
         <div className="history-header">
           <button className="history-new" onClick={handleReset} type="button">
             <span aria-hidden="true">+</span>
