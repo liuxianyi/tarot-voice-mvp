@@ -24,7 +24,7 @@ The app already supports:
 - a server-side `draw_tarot_spread` tool call;
 - `single-card` and `three-card` spreads;
 - mock mode when the selected text provider API key is missing;
-- optional server-side TTS through `/api/tarot/speak`, backed by OpenAI or VoxCPM.
+- optional server-side TTS through `/api/tarot/speak`, backed by OpenAI, Cloudflare Workers AI MeloTTS, or VoxCPM.
 
 The app does not yet generate or display real tarot images. It currently renders drawn cards as text tiles in the "Latest spread" panel.
 
@@ -97,6 +97,10 @@ OPENAI_MODEL=gpt-5.5
 TTS_PROVIDER=openai
 OPENAI_TTS_MODEL=gpt-4o-mini-tts
 OPENAI_TTS_VOICE=marin
+CLOUDFLARE_ACCOUNT_ID=
+CLOUDFLARE_API_TOKEN=
+CLOUDFLARE_TTS_MODEL=@cf/myshell-ai/melotts
+CLOUDFLARE_TTS_LANG=zh
 VOXCPM_TTS_ENDPOINT=http://127.0.0.1:8810/synthesize
 VOXCPM_TTS_CONTROL=年轻女性，声音温柔平静，有疗愈感，语速适中，适合塔罗解读
 VOXCPM_TTS_CFG=2.0
@@ -108,6 +112,8 @@ DEEPSEEK_MODEL=deepseek-chat
 Set `AI_PROVIDER=deepseek` to use DeepSeek for tarot text reasoning. DeepSeek support lives in `lib/openai.ts` beside the OpenAI Responses implementation. OpenAI TTS still requires `OPENAI_API_KEY`.
 
 Set `TTS_PROVIDER=voxcpm` to use local VoxCPM speech synthesis. VoxCPM is a Python model runtime, so run `python scripts/voxcpm_tts_server.py --host 127.0.0.1 --port 8810 --device auto` in a Python environment with `voxcpm` installed. The Next.js route calls `VOXCPM_TTS_ENDPOINT` and returns `audio/wav`.
+
+Set `TTS_PROVIDER=cloudflare` to use Cloudflare Workers AI MeloTTS. The Next.js route calls Cloudflare's Workers AI REST API with `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_TTS_MODEL`, and `CLOUDFLARE_TTS_LANG`, then returns `audio/mpeg`.
 
 Future image generation work will likely need an explicit image model variable, for example:
 
@@ -137,7 +143,7 @@ http://127.0.0.1:3017
 - `README.md`: user-facing project overview and API contract.
 - `components/tarot-voice-app.tsx`: main client component, voice capture, chat state, spread rendering.
 - `app/api/tarot/turn/route.ts`: validates turn requests, chooses mock or live mode.
-- `app/api/tarot/speak/route.ts`: dispatches to OpenAI TTS or local VoxCPM TTS and returns audio.
+- `app/api/tarot/speak/route.ts`: dispatches to OpenAI TTS, Cloudflare Workers AI MeloTTS, or local VoxCPM TTS and returns audio.
 - `scripts/voxcpm_tts_server.py`: lightweight local HTTP server wrapping `voxcpm.VoxCPM.generate()`.
 - `lib/openai.ts`: OpenAI Responses call, DeepSeek Chat Completions call, tool definition, tool output loops.
 - `lib/tarot.ts`: deck templates, shuffle/draw logic, mock clarification behavior.

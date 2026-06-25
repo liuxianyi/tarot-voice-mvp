@@ -7,7 +7,7 @@ This project intentionally uses a chained voice workflow:
 1. browser audio capture with local MLX Whisper transcription
 2. text reasoning with OpenAI Responses API or DeepSeek Chat Completions
 3. a server-side tarot drawing tool
-4. optional OpenAI TTS playback
+4. optional OpenAI, Cloudflare Workers AI, or VoxCPM TTS playback
 
 That choice is deliberate. OpenAI's voice-agent guidance says chained voice pipelines are the better fit when you want explicit control over transcription, text reasoning, and speech output, or when you want to reuse an existing text agent in a voice product. The same guide says speech-to-speech Realtime is best when you need barge-in and low-latency conversational feel. For a first shipping MVP, this chain is the fastest path.
 
@@ -21,7 +21,7 @@ That choice is deliberate. OpenAI's voice-agent guidance says chained voice pipe
 - Browser audio recording through `MediaRecorder`, transcribed locally with MLX Whisper
 - `/api/tarot/turn` for the tarot brain
 - Server-side tarot drawing via a function tool
-- Optional `/api/tarot/speak` for OpenAI TTS
+- Optional `/api/tarot/speak` for OpenAI, Cloudflare Workers AI, or VoxCPM TTS
 - Mock mode when the selected text provider API key is missing
 
 ## Stack
@@ -29,7 +29,7 @@ That choice is deliberate. OpenAI's voice-agent guidance says chained voice pipe
 - `Next.js 16`
 - `React 19`
 - `OpenAI Responses API` or `DeepSeek Chat Completions`
-- `OpenAI Audio Speech API` or local `VoxCPM` TTS
+- `OpenAI Audio Speech API`, `Cloudflare Workers AI MeloTTS`, or local `VoxCPM` TTS
 
 ## Environment
 
@@ -42,6 +42,10 @@ OPENAI_MODEL=gpt-5.5
 TTS_PROVIDER=openai
 OPENAI_TTS_MODEL=gpt-4o-mini-tts
 OPENAI_TTS_VOICE=marin
+CLOUDFLARE_ACCOUNT_ID=
+CLOUDFLARE_API_TOKEN=
+CLOUDFLARE_TTS_MODEL=@cf/myshell-ai/melotts
+CLOUDFLARE_TTS_LANG=zh
 VOXCPM_TTS_ENDPOINT=http://127.0.0.1:8810/synthesize
 VOXCPM_TTS_CONTROL=年轻女性，声音温柔平静，有疗愈感，语速适中，适合塔罗解读
 VOXCPM_TTS_CFG=2.0
@@ -55,11 +59,29 @@ Notes:
 - Set `AI_PROVIDER=deepseek` to use DeepSeek for `/api/tarot/turn`.
 - If `AI_PROVIDER` is omitted, the server automatically selects DeepSeek when `DEEPSEEK_API_KEY` is present; otherwise it selects OpenAI.
 - DeepSeek uses `DEEPSEEK_API_KEY` and `DEEPSEEK_MODEL`.
+- Set `TTS_PROVIDER=cloudflare` to use Cloudflare Workers AI MeloTTS for `/api/tarot/speak`.
 - Set `TTS_PROVIDER=voxcpm` to use a local VoxCPM TTS service for `/api/tarot/speak`.
 - OpenAI TTS uses `OPENAI_API_KEY`, even when the tarot turn uses DeepSeek.
+- Cloudflare TTS uses `CLOUDFLARE_ACCOUNT_ID` and a `CLOUDFLARE_API_TOKEN` with Workers AI access.
 - The current OpenAI latest-model guide lists `gpt-5.5` as the latest general model.
 - The current text-to-speech guide recommends `gpt-4o-mini-tts` for intelligent realtime applications.
 - The same guide says the best-quality built-in voices are `marin` and `cedar`.
+
+## Cloudflare Workers AI TTS
+
+Cloudflare MeloTTS is a low-cost server-side TTS option. The Next.js `/api/tarot/speak` route calls Cloudflare's Workers AI REST API and returns `audio/mpeg` to the browser.
+
+Set:
+
+```bash
+TTS_PROVIDER=cloudflare
+CLOUDFLARE_ACCOUNT_ID=...
+CLOUDFLARE_API_TOKEN=...
+CLOUDFLARE_TTS_MODEL=@cf/myshell-ai/melotts
+CLOUDFLARE_TTS_LANG=zh
+```
+
+Keep the app's speech output set to Server TTS in the UI. If Cloudflare rejects the language value for a deployment, override `CLOUDFLARE_TTS_LANG` with the value accepted by the model.
 
 ## VoxCPM TTS
 

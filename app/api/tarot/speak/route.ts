@@ -1,9 +1,17 @@
 import type { LanguageStyle } from "@/lib/types";
 
-type TtsProvider = "openai" | "voxcpm";
+type TtsProvider = "openai" | "voxcpm" | "cloudflare";
 
 function getTtsProvider(): TtsProvider {
-  return process.env.TTS_PROVIDER === "voxcpm" ? "voxcpm" : "openai";
+  if (process.env.TTS_PROVIDER === "voxcpm") {
+    return "voxcpm";
+  }
+
+  if (process.env.TTS_PROVIDER === "cloudflare") {
+    return "cloudflare";
+  }
+
+  return "openai";
 }
 
 function getOpenAiVoiceInstructions(language: LanguageStyle) {
@@ -17,6 +25,21 @@ function getVoxCpmControl(language: LanguageStyle) {
     process.env.VOXCPM_TTS_CONTROL ||
     (language === "zh" ? "年轻女性，声音温柔平静，有疗愈感，语速适中，适合塔罗解读" : "A warm young woman, calm and gentle, medium pace, suitable for a tarot reading")
   );
+}
+
+function getCloudflareTtsLanguage(language: LanguageStyle) {
+  return process.env.CLOUDFLARE_TTS_LANG || (language === "zh" ? "zh" : "en");
+}
+
+function decodeBase64Audio(audio: string) {
+  const binary = atob(audio);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
+  return bytes;
 }
 
 async function callOpenAiTts(text: string, language: LanguageStyle) {
@@ -55,6 +78,60 @@ async function callOpenAiTts(text: string, language: LanguageStyle) {
   const audio = await response.arrayBuffer();
 
   return new Response(audio, {
+    headers: {
+      "Content-Type": "audio/mpeg",
+      "Cache-Control": "no-store"
+    }
+  });
+}
+
+async function callCloudflareTts(text: string, language: LanguageStyle) {
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN;
+  const model = process.env.CLOUDFLARE_TTS_MODEL || "@cf/myshell-ai/melotts";
+
+  if (!accountId || !apiToken) {
+    return Response.json({ error: "CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN are required for Cloudflare TTS." }, { status: 501 });
+  }
+
+  const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiToken}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      prompt: text.slice(0, 900),
+      lang: getCloudflareTtsLanguage(language)
+    }),
+    cache: "no-store"
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    return Response.json(
+      {
+        error: "Cloudflare TTS request failed.",
+        detail: errorBody
+      },
+      { status: 500 }
+    );
+  }
+
+  const result = (await response.json()) as { result?: { audio?: string }; errors?: unknown[] };
+  const audio = result.result?.audio;
+
+  if (!audio) {
+    return Response.json(
+      {
+        error: "Cloudflare TTS response did not include audio.",
+        detail: result
+      },
+      { status: 500 }
+    );
+  }
+
+  return new Response(decodeBase64Audio(audio), {
     headers: {
       "Content-Type": "audio/mpeg",
       "Cache-Control": "no-store"
@@ -119,8 +196,14 @@ export async function POST(request: Request) {
     return Response.json({ error: "text is required." }, { status: 400 });
   }
 
-  if (getTtsProvider() === "voxcpm") {
+  const provider = getTtsProvider();
+
+  if (provider === "voxcpm") {
     return callVoxCpmTts(text, language);
+  }
+
+  if (provider === "cloudflare") {
+    return callCloudflareTts(text, language);
   }
 
   return callOpenAiTts(text, language);
